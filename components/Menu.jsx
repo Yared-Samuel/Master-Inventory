@@ -2,147 +2,262 @@ const menuItems = [
   {
     title: "MENU",
     items: [
+    
       {
         icon: "/home.png",
-        label: "Home",
-        href: "/",
-        visible: ["admin", "teacher", "student", "parent"],
+        label: "Dashboard",
+        href: "/page/dashboard",
+        visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
       },
+      
       {
-        icon: "/teacher.png",
-        label: "Products",
-        href: "/list/products",
-        visible: ["admin"],
-      },
-      {
-        icon: "/teacher.png",
-        label: "Teachers",
-        href: "/list/teachers",
-        visible: ["admin", "teacher"],
-      },
-      {
-        icon: "/student.png",
-        label: "Students",
-        href: "/list/students",
-        visible: ["admin", "teacher"],
+        icon: "/parent.png",
+        label: "Purchase",
+        href: "/transaction/purchase",
+        visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
       },
       {
         icon: "/parent.png",
-        label: "Parents",
-        href: "/list/parents",
-        visible: ["admin", "teacher"],
+        label: "Sales",
+        href: "/transaction/sales",
+        visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
       },
       {
-        icon: "/subject.png",
-        label: "Subjects",
-        href: "/list/subjects",
+        icon: "/parent.png",
+        label: "Transfer",
+        href: "/transaction/transfer",
+        visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
+      },
+      {
+        icon: "/teacher.png",
+        label: "Configs",
+        visible: ["admin", "company_admin"],
+        subItems: [
+          {
+            icon: "/teacher.png",
+            label: "Products",
+            href: "/configs/products",
+            visible: ["admin", "company_admin"],
+          },
+          {
+            icon: "/teacher.png",
+            label: "Stores",
+            href: "/configs/stores",
+            visible: ["admin", "company_admin"],
+          },
+          {
+            icon: "/student.png",
+            label: "Price",
+            href: "/configs/prices",
+            visible: ["admin", "company_admin"],
+          },
+        ]
+      },
+      {
+        icon: "/teacher.png",
+        label: "Report",
+        visible: ["admin", "company_admin", "storeMan", "barMan", "finance"],
+        subItems: [
+          {
+            icon: "/parent.png",
+            label: "Balance",
+            href: "/report/balance",
+            visible: ["admin", "company_admin", "storeMan", "barMan", "finance"],
+          },
+          {
+            icon: "/parent.png",
+            label: "Sales",
+            href: "/report/sales",
+            visible: ["admin", "company_admin", "storeMan", "barMan", "finance"],
+          },
+          // Add more report types as needed
+        ]
+      },
+      {
+        icon: "/teacher.png",
+        label: "Admin",
         visible: ["admin"],
-      },
-      {
-        icon: "/class.png",
-        label: "Classes",
-        href: "/list/classes",
-        visible: ["admin", "teacher"],
-      },
-      {
-        icon: "/lesson.png",
-        label: "Lessons",
-        href: "/list/lessons",
-        visible: ["admin", "teacher"],
-      },
-      {
-        icon: "/exam.png",
-        label: "Exams",
-        href: "/list/exams",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/assignment.png",
-        label: "Assignments",
-        href: "/list/assignments",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/result.png",
-        label: "Results",
-        href: "/list/results",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/attendance.png",
-        label: "Attendance",
-        href: "/list/attendance",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/calendar.png",
-        label: "Events",
-        href: "/list/events",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/message.png",
-        label: "Messages",
-        href: "/list/messages",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/announcement.png",
-        label: "Announcements",
-        href: "/list/announcements",
-        visible: ["admin", "teacher", "student", "parent"],
+        subItems: [
+          {
+            icon: "/teacher.png", 
+            label: "Companies",
+            href: "/admin/companies",
+            visible: ["admin"],
+          },
+          {
+            icon: "/teacher.png",
+            label: "Users",
+            href: "/admin/users",
+            visible: ["admin"],
+          },
+          {
+            icon: "/teacher.png",
+            label: "System Settings",
+            href: "/admin/settings",
+            visible: ["admin"],
+          },
+        ]
       },
     ],
   },
   {
-    title: "OTHER",
+    title: "USER",
     items: [
       {
         icon: "/profile.png",
-        label: "Profile",
-        href: "/profile",
-        visible: ["admin", "teacher", "student", "parent"],
+        label: "User",
+        visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
+        subItems: [
+          {
+            icon: "/profile.png",
+            label: "Profile",
+            href: "/profile",
+            visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
+          },
+          {
+            icon: "/logout.png",
+            label: "Logout",
+            href: "#",
+            visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
+            onClick: async (e, router) => {
+              e.preventDefault();
+              try {
+                console.log("Logging out...");
+                const response = await fetch('/api/users/logout', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                  const result = await response.json();
+                  console.log("Logout successful:", result);
+                  
+                  // Force page reload to clear state
+                  window.location.href = '/';
+                } else {
+                  console.error('Logout failed:', response.status);
+                  // Fallback to redirect even if the API fails
+                  window.location.href = '/';
+                }
+              } catch (error) {
+                console.error('Logout error:', error);
+                // Fallback to redirect even if there's an error
+                window.location.href = '/';
+              }
+            }
+          }
+        ]
       },
-      {
-        icon: "/setting.png",
-        label: "Settings",
-        href: "/settings",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/logout.png",
-        label: "Logout",
-        href: "/logout",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
+      
     ],
   },
 ];
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react'
-import { role } from '@/app/lib/data';
+import React, { useState } from 'react';
+import { role } from '@/lib/data';
+import { useRouter } from 'next/router';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import LogoutButton from './LogoutButton';
 
-const Menu = () => {
+const Menu = ({ isExpanded }) => {
+  const [expandedItems, setExpandedItems] = useState({});
+  const router = useRouter();
+
+  const toggleExpand = (label) => {
+    setExpandedItems(prev => ({
+      ...prev,
+      [label]: !prev[label]
+    }));
+  };
+
+  const isActive = (href) => router.pathname === href;
+
   return (
     <div className='mt-4 text-sm'>
-      {menuItems.map(i=>(
-        <div className='flex flex-col gap-2' key={i.title}>
-          <span className='hidden lg:block text-gray-400 font-light my-4'>{i.title}</span>
-          {i.items.map((item)=>{
-            if(item.visible.includes(role)){
+      {menuItems.map(section => (
+        <div className='flex flex-col' key={section.title}>
+          <span className={`text-gray-400 font-light transition-all duration-300 
+            ${isExpanded ? 'opacity-100' : 'opacity-0 h-0'}`}>
+            {section.title}
+          </span>
+          {section.items.map((item) => {
+            if (item.visible.includes(role)) {
+              if (item.subItems) {
+                // Render expandable item with subitems
+                return (
+                  <div key={item.label}>
+                    <button
+                      onClick={() => toggleExpand(item.label)}
+                      className={`w-full flex items-center ${isExpanded ? 'justify-between' : 'justify-center'} 
+                        text-gray-500 py-1 px-2 rounded-md hover:bg-lamaSkyLight 
+                        ${expandedItems[item.label] ? 'bg-lamaSkyLight' : ''}`}
+                    >
+                      <div className='flex items-center gap-1'>
+                        <Image src={item.icon} alt='' width={20} height={20} />
+                        <span className={`transition-all duration-300 
+                          ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                          {item.label}
+                        </span>
+                      </div>
+                      {isExpanded && (
+                        <span>
+                          {expandedItems[item.label] ? 
+                            <KeyboardArrowUpIcon fontSize="small" /> : 
+                            <KeyboardArrowDownIcon fontSize="small" />
+                          }
+                        </span>
+                      )}
+                    </button>
+                    {expandedItems[item.label] && isExpanded && (
+                      <div className='ml-7 lg:ml-8 flex flex-col'>
+                        {item.subItems.map(subItem => {
+                          if (subItem.visible.includes(role)) {
+                            return (
+                              <Link
+                                href={subItem.href}
+                                key={subItem.label}
+                                onClick={subItem.onClick ? (e) => subItem.onClick(e, router) : undefined}
+                                className={`flex items-center gap-1 text-gray-500 py-1 px-2 rounded-md 
+                                  hover:bg-lamaSkyLight ${isActive(subItem.href) ? 'bg-lamaSkyLight text-blue-600' : ''}`}
+                              >
+                                <Image src={subItem.icon} alt='' width={16} height={16} />
+                                <span className={`transition-all duration-300 
+                                  ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                                  {subItem.label}
+                                </span>
+                              </Link>
+                            );
+                          }
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              // Render regular menu item
               return (
-                <Link href={item.href} key={item.label} className='flex items-center justify-center lg:justify-start gap-4 text-gray-500 py-2 md:px-2 rounded-md hover:bg-lamaSkyLight'>
+                <Link
+                  href={item.href}
+                  key={item.label}
+                  className={`flex items-center ${isExpanded ? 'justify-start' : 'justify-center'} 
+                    gap-1 text-gray-500 py-1 px-2 rounded-md hover:bg-lamaSkyLight 
+                    ${isActive(item.href) ? 'bg-lamaSkyLight text-blue-600' : ''}`}
+                >
                   <Image src={item.icon} alt='' width={20} height={20} />
-                  <span className='hidden lg:block'>{item.label}</span>
+                  <span className={`transition-all duration-300 
+                    ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                    {item.label}
+                  </span>
                 </Link>
-              )
+              );
             }
           })}
         </div>
       ))}
     </div>
-  )
-}
+  );
+};
 
-export default Menu
+export default Menu;

@@ -1,0 +1,79 @@
+import React, { useState } from 'react'
+import Menu from './Menu'
+import Navbar from './Navbar'
+import Link from 'next/link'
+import Image from 'next/image'
+import MenuIcon from '@mui/icons-material/Menu'
+import CloseIcon from '@mui/icons-material/Close'
+
+const Layout = ({children}) => {
+  const [isSidebarOpen, setSidebarOpen] = useState(true)
+
+  return (
+    <div className="flex min-h-screen relative">
+      {/* Toggle Button for medium and small screens */}
+      <button 
+        onClick={() => setSidebarOpen(!isSidebarOpen)}
+        className="fixed top-4 left-4 z-50 lg:hidden bg-white rounded-full p-2 shadow-lg"
+      >
+        {isSidebarOpen ? <CloseIcon /> : <MenuIcon />}
+      </button>
+
+      {/* Overlay for medium and small screens */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed lg:static
+        z-40 lg:z-auto
+        h-full
+        bg-white
+        transition-all duration-300 ease-in-out
+        ${isSidebarOpen ? 'left-0' : '-left-full lg:left-0'}
+        ${isSidebarOpen ? 'w-32 md:w-36' : 'w-16'}
+        p-2
+        border-r border-gray-200
+      `}>
+        <div className="flex items-center justify-between mb-6">
+          <div
+            
+            className="flex items-center gap-1 lg:block"
+          >
+            <Image src={"/logo.svg"} alt="logo" width={24} height={24} />
+            {/* <span className={`font-bold text-sm transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
+              Store
+            </span> */}
+          </div>
+          
+          {/* Toggle Button for large screens */}
+          <button 
+            onClick={() => setSidebarOpen(!isSidebarOpen)}
+            className="hidden lg:block"
+          >
+            {isSidebarOpen ? <CloseIcon fontSize="small" /> : <MenuIcon fontSize="small" />}
+          </button>
+        </div>
+        
+        <Menu isExpanded={isSidebarOpen} />
+      </aside>
+
+      {/* Main Content */}
+      <main className={`
+        flex-1
+        transition-all duration-300 ease-in-out
+        ${isSidebarOpen ? 'lg:ml-0' : 'lg:ml-0'}
+        bg-gray-50
+      `}>
+        <Navbar />
+        {children}
+      </main>
+    </div>
+  )
+}
+
+export default Layout
