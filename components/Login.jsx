@@ -24,8 +24,7 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
-
+    console.log({email, password})
     try {
       const response = await fetch("/api/users/login", {
         method: "POST",
@@ -36,47 +35,41 @@ const Login = () => {
       });
 
       const data = await response.json();
-      console.log("Full response data:", data);
-      console.log("User data structure:", data.data);
 
-      if (data.success) {
+      if (data.success && data.data) {
         const userData = data.data;
-        console.log("userData extracted:", userData);
         
-        if (!userData) {
-          console.error("userData is undefined or null");
-          toast.error("Login response missing user data");
-          return;
-        }
         
-        console.log("name:", userData.name);
-        console.log("email:", userData.email);
-        console.log("role:", userData.role);
-        
-        userData.role === 'admin' 
-          ? await router.push("/page/dashboard") 
-          : await router.push("/configs/products");
-        
+        // First set the auth state
         setAuth({
-          name: userData?.name ,
-          email: userData?.email,
-          role: userData?.role,
-          companyId: userData?.companyId,
-          permissions: userData?.permissions
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+          companyId: userData.companyId,
+          permissions: userData.permissions || {}
         });
         
+        // Show success message
         toast.success(data.message);
+        
+        // Then navigate based on role (after auth is set)
+        setTimeout(() => {
+          if (userData.role === 'admin') {
+            router.push("/page/dashboard");
+          } else {
+            router.push("/configs/products");
+          }
+        }, 100);
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Login failed");
         setErrMsg(data?.message || "Login failed");
       }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || "An error occurred");
       console.error("Error during login:", error);
       setErrMsg("An error occurred while logging in");
     }
   };
-  console.log("Auth in component:", auth);
   return (
     <div>
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">

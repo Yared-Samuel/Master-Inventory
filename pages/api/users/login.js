@@ -3,6 +3,7 @@ import connect from "@/lib/db";
 import { getUserModel, getCompanyModel } from "@/lib/models";
 import { sendSuccess, sendError, sendBadRequest, sendNotFound, sendUnauthorized } from "@/lib/utils/responseHandler";
 import { serialize } from "cookie";
+import bcrypt from 'bcryptjs';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -10,6 +11,34 @@ const COOKIE_OPTIONS = {
   sameSite: "strict",
   maxAge: 60 * 60 * 24, // 1 day
   path: "/"
+};
+
+// Map of role-specific messages and handling
+const roleConfig = {
+  'admin': {
+    loginMessage: "Admin login successful",
+    dashboardRedirect: "/admin/dashboard"
+  },
+  'company_admin': {
+    loginMessage: "Company admin login successful",
+    dashboardRedirect: "/dashboard"
+  },
+  'storeMan': {
+    loginMessage: "Store manager login successful",
+    dashboardRedirect: "/store/dashboard"
+  },
+  'barMan': {
+    loginMessage: "Bar manager login successful", 
+    dashboardRedirect: "/bar/dashboard"
+  },
+  'finance': {
+    loginMessage: "Finance login successful",
+    dashboardRedirect: "/finance/dashboard"
+  },
+  'user': {
+    loginMessage: "User login successful",
+    dashboardRedirect: "/dashboard"
+  }
 };
 
 export default async function Login(req, res) {
@@ -20,6 +49,8 @@ export default async function Login(req, res) {
       return sendBadRequest(res, "Email and password are required");
     }
 
+    console.log(`Login attempt for email: ${email}`);
+
     // Important: Connect to database before using models
     await connect();
     
@@ -27,37 +58,78 @@ export default async function Login(req, res) {
     const User = getUserModel();
     const Company = getCompanyModel();
 
-
     // Find user and populate company details
     const user = await User.findOne({ email })
       .select('+password')
       .populate('companyId', 'name isActive subscription');
-      
+    
     if (!user) {
+      console.log(`User not found: ${email}`);
       return sendNotFound(res, "User not found");
     }
     
+    console.log(`User found: ${user.name}, role: ${user.role}`);
+    
     // Check if user is active
     if (!user.isActive) {
+      console.log(`User account is inactive: ${email}`);
       return sendUnauthorized(res, "Your account has been deactivated");
     }
     
     // Check if company is active
     if (!user.companyId || !user.companyId.isActive) {
+      console.log(`Company is inactive for user: ${email}`);
       return sendUnauthorized(res, "Company account is inactive");
     }
     
     // Check subscription status (optional, can be expanded based on needs)
     const hasValidSubscription = validateSubscription(user.companyId.subscription);
     if (!hasValidSubscription && user.role !== 'admin') {
+      console.log(`Subscription expired for user: ${email}`);
       return sendUnauthorized(res, "Company subscription has expired");
     }
 
-    // Use the comparePassword method from our model
-    const isValidPassword = await user.comparePassword(password);
+    // Debug password properties
+    console.log(`Password exists: ${!!user.password}`);
+    console.log(`Password length: ${user.password ? user.password.length : 0}`);
+    
+    // Try multiple password verification approaches
+    let isValidPassword = false;
+    
+    // First try the model's comparePassword method
+    if (typeof user.comparePassword === 'function') {
+      console.log(`Using model comparePassword method for ${email}`);
+      try {
+        isValidPassword = await user.comparePassword(password);
+        console.log(`Model password comparison result: ${isValidPassword}`);
+      } catch (err) {
+        console.error(`Error using model comparePassword: ${err.message}`);
+      }
+    }
+    
+    // If that fails, try direct bcrypt comparison
     if (!isValidPassword) {
+      try {
+        console.log(`Using direct bcrypt comparison for ${email}`);
+        isValidPassword = await bcrypt.compare(password, user.password);
+        console.log(`Direct bcrypt comparison result: ${isValidPassword}`);
+      } catch (err) {
+        console.error(`Error using direct bcrypt comparison: ${err.message}`);
+      }
+    }
+
+    if (!isValidPassword) {
+      console.log(`Invalid password for ${email}`);
       return sendBadRequest(res, "Invalid credentials");
     }
+
+    // Get role-specific config or use defaults
+    const roleInfo = roleConfig[user.role] || {
+      loginMessage: "Login successful",
+      dashboardRedirect: "/dashboard"
+    };
+
+    console.log(`${roleInfo.loginMessage} for ${email}`);
 
     // Generate token with user ID and company ID
     const token = generateToken(
@@ -71,22 +143,23 @@ export default async function Login(req, res) {
       lastLogin: new Date()
     });
 
+    // Set the authentication cookie
     res.setHeader("Set-Cookie", serialize("token", token, COOKIE_OPTIONS));
-    console.log(user.companyId)
-    return sendSuccess(res, "Login successful", {
-     
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        companyId: user.companyId._id,
-        companyName: user.companyId.name,
-        permissions: {
-          isAdmin: user.role === 'admin',
-          isCompanyAdmin: user.role === 'company_admin',
-          canAccessConfig: ['admin', 'company_admin'].includes(user.role),
-          canAccessReports: ['admin', 'company_admin', 'storeMan', 'barMan', 'finance'].includes(user.role)
-        }
-      
+    
+    // Return success response with role-specific message
+    return sendSuccess(res, roleInfo.loginMessage, {
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      companyId: user.companyId._id,
+      companyName: user.companyId.name,
+      dashboard: roleInfo.dashboardRedirect,
+      permissions: {
+        isAdmin: user.role === 'admin',
+        isCompanyAdmin: user.role === 'company_admin',
+        canAccessConfig: ['admin', 'company_admin'].includes(user.role),
+        canAccessReports: ['admin', 'company_admin', 'storeMan', 'barMan', 'finance'].includes(user.role)
+      }
     });
   } catch (error) {
     console.error("Login error:", error);

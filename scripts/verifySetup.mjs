@@ -1,17 +1,19 @@
 #!/usr/bin/env node
 
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { dirname, join, resolve } from 'path';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 import chalk from 'chalk'; // Optional, for colored output
 
 // Setup env
-dotenv.config();
+dotenv.config({ path: resolve(__dirname, '..', '.env') });
 
 // Get the current script's directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const rootDir = resolve(__dirname, '..');
 
 // Set colors for output
 const success = (msg) => console.log(chalk?.green(msg) || `✅ ${msg}`);
@@ -112,6 +114,126 @@ async function checkForAdmin() {
 }
 
 /**
+ * Verify login functionality
+ */
+async function verifySetup() {
+  try {
+    info("Starting system verification...");
+    
+    info("Connecting to MongoDB...");
+    await mongoose.connect(process.env.MONGO_URI);
+    success("Connected to MongoDB successfully");
+
+    // Define user schema for testing
+    const userSchema = new mongoose.Schema({
+      name: { type: String, required: true },
+      email: { type: String, required: true, unique: true },
+      password: { type: String, required: true, select: false },
+      role: { type: String, required: true },
+      companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
+      isActive: { type: Boolean, default: true }
+    });
+
+    // Add comparePassword method for testing
+    userSchema.methods.comparePassword = async function(candidatePassword) {
+      return await bcrypt.compare(candidatePassword, this.password);
+    };
+
+    const User = mongoose.models.User || mongoose.model('User', userSchema);
+
+    // Test passwords for each role type
+    const testPasswords = {
+      'admin': 'Admin@123',
+      'company_admin': 'Admin@123',
+      'storeMan': 'Store@123',
+      'barMan': 'Bar@123',
+      'finance': 'Finance@123',
+      'user': 'User@123'
+    };
+
+    // Check database connection
+    info("\nVerifying database connection...");
+    if (mongoose.connection.readyState === 1) {
+      success("Database connection is active");
+    } else {
+      error("Database connection failed!");
+      process.exit(1);
+    }
+
+    // Find users by role
+    info("\nVerifying user accounts...");
+    const usersByRole = {};
+    
+    for (const role of Object.keys(testPasswords)) {
+      const users = await User.find({ role }).select('+password');
+      usersByRole[role] = users;
+      
+      if (users.length > 0) {
+        success(`Found ${users.length} users with role '${role}'`);
+      } else {
+        warn(`No users found with role '${role}'`);
+      }
+    }
+
+    // Test password login for each role
+    info("\nTesting password authentication...");
+    
+    for (const [role, users] of Object.entries(usersByRole)) {
+      if (users.length === 0) continue;
+      
+      const testUser = users[0];
+      const testPassword = testPasswords[role];
+      
+      info(`Testing login for ${testUser.email} (${role})...`);
+      
+      try {
+        // Verify the comparePassword method exists
+        if (typeof testUser.comparePassword !== 'function') {
+          error(`User ${testUser.email} is missing the comparePassword method!`);
+          continue;
+        }
+        
+        // Test password comparison
+        const passwordMatches = await testUser.comparePassword(testPassword);
+        
+        if (passwordMatches) {
+          success(`Login test for ${role} role successful! (${testUser.email})`);
+        } else {
+          error(`Login test failed for ${role} role. Password mismatch.`);
+          info(`Try running 'node scripts/fix-user-passwords.mjs' to reset the password.`);
+        }
+      } catch (err) {
+        error(`Error testing login for ${role}: ${err.message}`);
+      }
+    }
+
+    // Verify schema methods
+    info("\nVerifying schema methods...");
+    
+    if (userSchema.methods.comparePassword) {
+      success("User schema has comparePassword method");
+    } else {
+      error("User schema is missing comparePassword method!");
+    }
+
+    // Final verdict
+    info("\nVerification complete!");
+    info("If any tests failed, run the password reset script:");
+    info("node scripts/fix-user-passwords.mjs");
+    
+  } catch (err) {
+    error(`Error during verification: ${err.message}`);
+    console.error(err);
+  } finally {
+    if (mongoose.connection.readyState !== 0) {
+      info("Closing database connection...");
+      await mongoose.disconnect();
+      success("Database connection closed");
+    }
+  }
+}
+
+/**
  * Main function
  */
 async function main() {
@@ -138,6 +260,9 @@ async function main() {
     info("- With API: POST to /api/seed/admin with { secretKey: 'seed-inventory-app-securely' }");
     info("- With MongoDB shell: mongosh your-connection-string --file scripts/mongodb-seed.js");
   }
+  
+  // Step 4: Verify login functionality
+  await verifySetup();
   
   console.log("\n===== VERIFICATION COMPLETE =====\n");
   
