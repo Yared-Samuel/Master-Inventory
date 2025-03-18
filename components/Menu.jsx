@@ -61,7 +61,7 @@ const menuItems = [
           {
             icon: "/parent.png",
             label: "Balance",
-            href: "/report/balance",
+        href: "/report/balance",
             visible: ["admin", "company_admin", "storeMan", "barMan", "finance"],
           },
           {
@@ -108,15 +108,15 @@ const menuItems = [
         label: "User",
         visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
         subItems: [
-          {
-            icon: "/profile.png",
-            label: "Profile",
-            href: "/profile",
+      {
+        icon: "/profile.png",
+        label: "Profile",
+        href: "/profile",
             visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
-          },
-          {
-            icon: "/logout.png",
-            label: "Logout",
+      },
+      {
+        icon: "/logout.png",
+        label: "Logout",
             href: "#",
             visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
             onClick: async (e, router) => {

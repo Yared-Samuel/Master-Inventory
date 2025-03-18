@@ -22,12 +22,12 @@ const validateStoreData = (data) => {
 
 async function handler(req, res) {
   try {
-    await connect();
+  await connect();
     const StoreList = getStoreListModel();
     const { method, query, body } = req;
 
-    switch (method) {
-      case "POST": {
+  switch (method) {
+    case "POST": {
         validateStoreData(body);
         
         // Create store with user and company ID from authenticated user
@@ -114,7 +114,7 @@ async function handler(req, res) {
       default:
         return sendBadRequest(res, `Method ${method} Not Allowed`);
     }
-  } catch (error) {
+      } catch (error) {
     return sendError(res, error);
   }
 }

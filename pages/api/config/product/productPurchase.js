@@ -8,7 +8,8 @@ export default async function handler(req, res) {
   await getIdFromToken(token)
   connect()
   try {
-    const products = await Product.find({type: {$nin:'forSale'} })
+    // Find all products in the database without any filtering
+    const products = await Product.find()
       .sort("-createdAt")
       
     res.status(200).json({

@@ -8,7 +8,7 @@ const Login = () => {
   const router = useRouter();
 
   const { setAuth, auth } = useContext(AuthContext);
-  console.log("Auth in component:", auth);
+  
 
   const [email, setEmail] = useState("");
   const [validEmail, setValidEmail] = useState(false);
@@ -58,11 +58,11 @@ const Login = () => {
           : await router.push("/configs/products");
         
         setAuth({
-          name: userData?.name || "Unknown",
-          email: userData?.email || "unknown@example.com",
-          role: userData?.role || "user",
-          companyId: userData?.companyId || "",
-          permissions: userData?.permissions || {}
+          name: userData?.name ,
+          email: userData?.email,
+          role: userData?.role,
+          companyId: userData?.companyId,
+          permissions: userData?.permissions
         });
         
         toast.success(data.message);
@@ -76,7 +76,7 @@ const Login = () => {
       setErrMsg("An error occurred while logging in");
     }
   };
-
+  console.log("Auth in component:", auth);
   return (
     <div>
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">

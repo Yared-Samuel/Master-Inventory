@@ -366,81 +366,81 @@ const TableStoreList = () => {
                   {/* Store Details */}
                   {store.subStore || store.mainStore ? (
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-                      <div>
-                        <label
-                          htmlFor="name"
-                          className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
-                        >
-                          Store Name
-                        </label>
-                        <input
-                          name="name"
-                          value={store.name || ""}
-                          onChange={handleInputChange}
-                          type="text"
-                          id="name"
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
+                    >
+                      Store Name
+                    </label>
+                    <input
+                      name="name"
+                      value={store.name || ""}
+                      onChange={handleInputChange}
+                      type="text"
+                      id="name"
                           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <label
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                  <label
                           htmlFor="Sprice"
                           className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
-                        >
+                  >
                           Selling Price
-                        </label>
-                        <select
-                          name="Sprice"
-                          value={store?.Sprice}
-                          onChange={handleInputChange}
+                  </label>
+                  <select
+                    name="Sprice"
+                    value={store?.Sprice}
+                    onChange={handleInputChange}
                           id="Sprice"
                           disabled={store.mainStore}
                           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                           required={!store.mainStore}
-                        >
-                          {priceData.map((item) => (
-                            <option key={item._id} value={item._id}>
-                              {item.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                  >
+                    {priceData.map((item) => (
+                      <option key={item._id} value={item._id}>
+                        {item.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                      <div>
-                        <label
-                          htmlFor="operator"
-                          className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
-                        >
-                          Operator
-                        </label>
-                        <input
-                          name="operator"
-                          value={store?.operator}
-                          onChange={handleInputChange}
-                          type="text"
+                <div>
+              <label
+                htmlFor="operator"
+                className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
+              >
+                Operator
+              </label>
+              <input
+                name="operator"
+                value={store?.operator}
+                onChange={handleInputChange}
+                type="text"
                           id="operator"
                           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        />
-                      </div>
+              />
+            </div>
                       
-                      <div>
-                        <label
-                          htmlFor="description"
-                          className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
-                        >
-                          Description
-                        </label>
-                        <input
-                          name="description"
-                          value={store?.description}
-                          onChange={handleInputChange}
-                          type="text"
+            <div>
+              <label
+                htmlFor="description"
+                className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
+              >
+                Description
+              </label>
+              <input
+                name="description"
+                value={store?.description}
+                onChange={handleInputChange}
+                type="text"
                           id="description"
                           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        />
-                      </div>
+              />
+            </div>
                     </div>
                   ) : (
                     <div className="flex items-center mb-4 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">
@@ -454,13 +454,13 @@ const TableStoreList = () => {
                     </div>
                   )}
 
-                  <button
-                    type="submit"
-                    className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                  >
-                    Update store
-                  </button>
-                </form>
+                <button
+                  type="submit"
+                  className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                >
+                  Update store
+                </button>
+              </form>
               </div>
             </div>
           </div>

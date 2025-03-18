@@ -5,15 +5,15 @@ import { sendSuccess, sendError, sendBadRequest, sendCreated } from "@/lib/utils
 
 async function handler(req, res) {
   try {
-    await connect();
+  await connect();
     const Sprice = getSellingPriceModel();
     const Product = getProductModel();
     
     const { method } = req;
     console.log(`Processing ${method} request for price API`);
 
-    switch (method) {
-      case "POST": {
+  switch (method) {
+    case "POST": {
         const { name, products } = req.body;
         
         if (!name || !products) {

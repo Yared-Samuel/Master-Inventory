@@ -14,13 +14,13 @@ import {
 
 async function handler(req, res) {
   try {
-    await connect();
+  await connect();
     const Transaction = getInventoryModel();
     const Product = getProductModel();
     const { method } = req;
-
-    switch (method) {
-      case "POST":
+  
+  switch (method) {
+    case "POST":
         return await handlePurchaseTransaction(req, res, Transaction, Product);
       case "GET":
         return await getPurchaseTransactions(req, res, Transaction);
@@ -78,7 +78,7 @@ async function handlePurchaseTransaction(req, res, Transaction, Product) {
       // If main units specified (e.g., crates), convert to sub-units (e.g., bottles)
       subUnitQuantity = parsedQuantity * product.sub_measurment_value;
       displayQuantity = `${originalQuantity || parsedQuantity} ${product.measurment_name}`;
-    } else {
+            } else {
       // Using sub-units directly (e.g., individual bottles)
       displayQuantity = `${parsedQuantity} ${product.sub_measurment_name || product.measurment_name}`;
     }
@@ -89,7 +89,7 @@ async function handlePurchaseTransaction(req, res, Transaction, Product) {
     // Create purchase transaction
     const transaction = new Transaction({
       type: "purchase",
-      productId,
+                productId,
       storeId,
       quantity: subUnitQuantity, // Store the actual sub-unit quantity
       encodedQuantity, // Store the custom encoded quantity
@@ -113,7 +113,7 @@ async function handlePurchaseTransaction(req, res, Transaction, Product) {
       price: transaction.price,
       date: transaction.createdAt
     });
-  } catch (error) {
+        } catch (error) {
     console.error('Handle Purchase Error:', error);
     return sendError(res, error);
   }
@@ -131,11 +131,11 @@ async function getPurchaseTransactions(req, res, Transaction) {
     .populate("productId", "name measurment_name sub_measurment_name sub_measurment_value")
     .populate("storeId", "name")
     .populate("user", "name")
-    .sort("-createdAt")
+          .sort("-createdAt")
     .lean();
     
     return sendSuccess(res, "Purchase transactions retrieved successfully", transactions);
-  } catch (error) {
+      } catch (error) {
     console.error('Get Purchase Transactions Error:', error);
     return sendError(res, error);
   }
