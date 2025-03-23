@@ -14,6 +14,7 @@ import TanStackTable from "../tanStackTableComponents/TanStackTable";
 import AuthContext from "@/pages/context/AuthProvider";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
+import { formatQuantityWithUnits } from "@/lib/utils/formatters";
 
 const TableSales = () => {
   const { auth } = useContext(AuthContext);
@@ -59,59 +60,6 @@ const TableSales = () => {
     }).format(value);
   };
 
-  // Helper function for quantity display
-  const formatQuantity = (row) => {
-    // If we have a display quantity string already formatted, use it
-    if (row.displayQuantity) {
-      return row.displayQuantity;
-    }
-    
-    // If we have whole units and remainder, use that format
-    if (row.wholeUnits !== undefined && row.remainderSubUnits !== undefined) {
-      const product = row.productId;
-      if (!product) return row.quantity;
-      
-      let formattedText = `${row.wholeUnits} ${product.measurment_name}`;
-      if (row.remainderSubUnits > 0) {
-        formattedText += ` and ${row.remainderSubUnits} ${product.sub_measurment_name}`;
-      }
-      return formattedText;
-    }
-    
-    // If we have formatted quantity from the API, use it
-    if (row.formattedQuantity) {
-      return row.formattedQuantity;
-    }
-    
-    // Fall back to building the string ourselves
-    const product = row.productId;
-    if (!product) return row.quantity;
-    
-    // If using sub-measurement, convert to proper display format
-    if (row.measurementType === 'sub' && row.originalQuantity && product.sub_measurment_value) {
-      const totalBottles = row.originalQuantity;
-      const bottlesPerCrate = product.sub_measurment_value;
-      
-      const wholeUnits = Math.floor(totalBottles / bottlesPerCrate);
-      const remainderBottles = totalBottles % bottlesPerCrate;
-      
-      if (wholeUnits > 0 && remainderBottles > 0) {
-        return `${wholeUnits} ${product.measurment_name} and ${remainderBottles} ${product.sub_measurment_name}`;
-      } else if (wholeUnits > 0) {
-        return `${wholeUnits} ${product.measurment_name}`;
-      } else {
-        return `${remainderBottles} ${product.sub_measurment_name}`;
-      }
-    }
-    
-    // Default case - just show with the measurement unit
-    if (row.measurementUnit) {
-      return `${row.quantity} ${row.measurementUnit}`;
-    }
-    
-    return row.quantity;
-  };
-
   const columns = [
     {
       header: "Transaction Type",
@@ -128,11 +76,11 @@ const TableSales = () => {
     },
     {
       header: "Quantity",
-      cell: ({ row }) => formatQuantity(row.original),
-      // Custom sorting for quantity
-      sortingFn: (rowA, rowB) => {
-        // Always sort by the actual quantity value
-        return rowA.original.quantity - rowB.original.quantity;
+      accessorKey: "quantity",
+      cell: ({ row }) => {
+        const transaction = row.original;
+        const product = transaction.productId;
+        return formatQuantityWithUnits(transaction.quantity, product);
       }
     },
     {
@@ -144,28 +92,9 @@ const TableSales = () => {
       header: "Remaining",
       accessorKey: "remaining",
       cell: ({ row }) => {
-        // If we have a formatted remaining value, use it directly
-        if (row.original.formattedRemaining) {
-          return row.original.formattedRemaining;
-        }
-        
-        // Otherwise, use the whole units and remainder if available
-        if (row.original.wholeUnits !== undefined && row.original.remainderSubUnits !== undefined) {
-          const product = row.original.productId;
-          if (!product) return row.original.remaining;
-          
-          let formattedText = `${row.original.wholeUnits} ${product.measurment_name}`;
-          if (row.original.remainderSubUnits > 0) {
-            formattedText += ` and ${row.original.remainderSubUnits} ${product.sub_measurment_name}`;
-          }
-          return formattedText;
-        }
-        
-        // Fallback to original display
-        const product = row.original.productId;
-        if (!product) return row.original.remaining;
-        
-        return `${row.original.remaining} ${product.measurment_name}`;
+        const transaction = row.original;
+        const product = transaction.productId;
+        return formatQuantityWithUnits(transaction.remaining, product);
       }
     },    
     {
@@ -178,7 +107,7 @@ const TableSales = () => {
       })
     },
        
-    ...(auth.role === "admin"
+    ...(auth.role === "admin" || auth.role === "company_admin"
         ? [
             {
                 header: "Created By",
@@ -239,27 +168,7 @@ const TableSales = () => {
         >
           Sales Transactions
         </TanStackTable>
-        
-        {/* Summary Section */}
-        {summary && !loading && (
-          <div className="bg-white p-4 m-4 rounded-md shadow-sm">
-            <h3 className="text-lg font-semibold mb-2">Transaction Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-blue-50 p-3 rounded-md">
-                <p className="text-sm text-blue-800">Total Transactions</p>
-                <p className="text-2xl font-bold">{summary.totalTransactions}</p>
-              </div>
-              <div className="bg-green-50 p-3 rounded-md">
-                <p className="text-sm text-green-800">Total Quantity</p>
-                <p className="text-2xl font-bold">{summary.totalQuantity.toFixed(2)}</p>
-              </div>
-              <div className="bg-purple-50 p-3 rounded-md">
-                <p className="text-sm text-purple-800">Total Sales</p>
-                <p className="text-2xl font-bold">{formatCurrency(summary.totalSales)}</p>
-              </div>
-            </div>
-          </div>
-        )}
+
       </div>
     </>
   );

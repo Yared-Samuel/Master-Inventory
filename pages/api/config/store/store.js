@@ -47,6 +47,7 @@ async function handler(req, res) {
         const stores = await StoreList.find(companyFilter)
           .sort("-createdAt")
           .populate("user", "name")
+          .populate("Sprice", "name")
           .lean();
         
         return sendSuccess(res, "Stores retrieved successfully", stores);

@@ -8,7 +8,7 @@ const initialState = {
   type: "",
   measurment_name: "",
   sub_measurment_name: "",
-  sub_measurment_value: "",
+  sub_measurment_value: 1,
 };
 const ProductForm = () => {
   const router = useRouter()

@@ -35,23 +35,29 @@ async function handler(req, res) {
 
 async function handlePurchaseTransaction(req, res, Transaction, Product) {
   try {
-    // Request body contains all purchase data
+    // Request body contains purchase data from frontend
     const { 
-      quantity,
       productId,
-      storeId,
-      measurementType,
-      originalQuantity,
-      // Additional fields
-      price,
-      supplier,
-      notes 
+      quantity,
+      totalPrice,
+      fromStore,
+      tin,
+      date
     } = req.body;
     
     // Validation
-    if (!productId || !storeId || !quantity) {
+    if (!productId || !fromStore || !quantity) {
       return sendBadRequest(res, "Product ID, store ID, and quantity are required");
     }
+    
+    // Get product details
+    const product = await Product.findOne({ 
+      _id: productId,
+      companyId: req.user.companyId // Ensure product belongs to user's company
+    });
+    
+    const sub_measurment_value = product.sub_measurment_value;
+
     
     // Ensure quantity is a number
     const parsedQuantity = parseFloat(quantity);
@@ -59,47 +65,44 @@ async function handlePurchaseTransaction(req, res, Transaction, Product) {
       return sendBadRequest(res, "Quantity must be a positive number");
     }
     
-    // Get product details (needed for measurement handling)
-    const product = await Product.findOne({ 
-      _id: productId,
-      companyId: req.user.companyId // Ensure product belongs to user's company
-    });
-    
+    const quantityInSubUnit = parsedQuantity * sub_measurment_value;
+
     if (!product) {
       return sendBadRequest(res, "Product not found or doesn't belong to your company");
     }
-    
-    // Calculate the actual quantity in sub-units
-    let subUnitQuantity = parsedQuantity;
-    let displayQuantity = parsedQuantity;
-    
-    // Format the display quantity based on measurement type
-    if (measurementType === 'main' && product.sub_measurment_value) {
-      // If main units specified (e.g., crates), convert to sub-units (e.g., bottles)
-      subUnitQuantity = parsedQuantity * product.sub_measurment_value;
-      displayQuantity = `${originalQuantity || parsedQuantity} ${product.measurment_name}`;
-            } else {
-      // Using sub-units directly (e.g., individual bottles)
-      displayQuantity = `${parsedQuantity} ${product.sub_measurment_name || product.measurment_name}`;
+    const lastTransaction = await Transaction.findOne({
+      companyId: req.user.companyId,
+      fromStore: fromStore,
+      productId: productId,
+      status: "done",
+    }, 'remaining remainingBeforeTransfer')
+    .sort({ createdAt: -1 });
+
+    let prevRemaining = 0
+    let currRemaining = 0
+
+    if(!lastTransaction){
+      currRemaining = quantityInSubUnit
+      prevRemaining = 0
+    }else {
+      currRemaining = lastTransaction.remaining + quantityInSubUnit
+      prevRemaining = lastTransaction.remaining
     }
     
-    // Encode the purchased quantity for storage
-    const encodedQuantity = encodeQuantityForStorage(parsedQuantity, product);
-    
-    // Create purchase transaction
+    // Create purchase transaction matching the schema and frontend data
     const transaction = new Transaction({
-      type: "purchase",
-                productId,
-      storeId,
-      quantity: subUnitQuantity, // Store the actual sub-unit quantity
-      encodedQuantity, // Store the custom encoded quantity
-      displayQuantity, // Store formatted display quantity
+      transactionType: "purchase",
+      status: "done", 
+      quantity: quantityInSubUnit,
+      totalPrice: totalPrice,
+      remainingBeforeTransfer: prevRemaining,
+      remaining: currRemaining, // Set initial remaining value equal to quantity
+      fromStore,
+      productId,
+      tin: tin || null,
+      date: date ? new Date(date) : new Date(),
       user: req.user.id,
-      companyId: req.user.companyId,
-      // Additional fields
-      price: price || 0,
-      supplier,
-      notes
+      companyId: req.user.companyId
     });
     
     await transaction.save();
@@ -107,14 +110,11 @@ async function handlePurchaseTransaction(req, res, Transaction, Product) {
     return sendCreated(res, "Purchase transaction successful", {
       _id: transaction._id,
       productName: product.name,
-      quantity: displayQuantity,
-      encodedQuantity,
-      decodedQuantity: decodeQuantityFromStorage(encodedQuantity, product),
-      price: transaction.price,
-      date: transaction.createdAt
+      quantity: quantityInSubUnit,
+      totalPrice: transaction.totalPrice,
+      date: transaction.date
     });
-        } catch (error) {
-    console.error('Handle Purchase Error:', error);
+  } catch (error) {
     return sendError(res, error);
   }
 }
@@ -123,13 +123,12 @@ async function getPurchaseTransactions(req, res, Transaction) {
   try {
     // Filter by company for non-admin users
     const companyFilter = req.user.role === 'admin' ? {} : { companyId: req.user.companyId };
-    
     const transactions = await Transaction.find({
       ...companyFilter,
-      type: "purchase"
+      transactionType: "purchase"
     })
     .populate("productId", "name measurment_name sub_measurment_name sub_measurment_value")
-    .populate("storeId", "name")
+    .populate("fromStore", "name")
     .populate("user", "name")
           .sort("-createdAt")
     .lean();

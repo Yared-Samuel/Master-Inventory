@@ -77,7 +77,7 @@ const TableSales = () => {
       header: "Remaining",
       accessorKey: "remaining",
     },
-    ...(auth.role === "admin"
+    ...(auth.role === "admin" || auth.role === "company_admin"
       ? [
           {
             header: "Created By",

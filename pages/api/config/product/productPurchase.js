@@ -1,26 +1,36 @@
 import connect from "@/lib/db";
-import Product from "@/models/productModel";
-import { getIdFromToken } from "@/lib/getDataFromToken";
+import { getProductModel } from "@/lib/models";
+import { protectRoute } from "@/lib/middleware/roleMiddleware";
+import { sendSuccess, sendError, sendCreated, sendBadRequest, sendNotFound } from "@/lib/utils/responseHandler";
 
-export default async function handler(req, res) {
-    const {  cookies } = req;
-  const token = cookies?.token
-  await getIdFromToken(token)
-  connect()
+async function handler(req, res) {
   try {
-    // Find all products in the database without any filtering
-    const products = await Product.find()
-      .sort("-createdAt")
+    await connect();
+    const Product = getProductModel();
+    const { method } = req;
+
+    switch (method) {
+      case "GET": {
+        // Apply company filter based on user role
+        const companyFilter = req.user.role === 'admin' ? {} : { companyId: req.user.companyId };
+        
+        // Find all products for the user's company
+        const products = await Product.find(companyFilter)
+          .sort("-createdAt");
+          
+        return sendSuccess(res, "Products retrieved successfully", products);
+      }
       
-    res.status(200).json({
-      success: true,
-      data: products,
-    });
+      // You can add more HTTP methods here if needed
+      // case "POST": { ... }
+      // case "PUT": { ... }
+      
+      default:
+        return sendBadRequest(res, `Method ${method} Not Allowed`);
+    }
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Database error. Please try again later.",
-      data: error.message,
-    });
+    return sendError(res, error);
   }
 }
+
+export default protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance', 'user'])(handler);

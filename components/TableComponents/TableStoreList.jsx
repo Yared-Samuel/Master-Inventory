@@ -64,12 +64,7 @@ const TableStoreList = () => {
   // Columns
 
   const columns = [
-    {
-      header: "Order #",
-      accessorFn: (row, rowIndex) => rowIndex + 1,
-      id: "orderNumber",
-      cell: (info) => info.getValue(),
-    },
+    
     {
       header: "Name",
       accessorKey: "name",
@@ -94,7 +89,7 @@ const TableStoreList = () => {
       header: "Operator",
       accessorKey: "operator",
     },    
-    ...(auth.role === "admin"
+    ...(auth.role === "admin" || auth.role === "company_admin"
         ? [
             {
                 header: "Created By",

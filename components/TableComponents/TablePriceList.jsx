@@ -46,7 +46,6 @@ const TablePriceList = () => {
       setLoading(true);
       setError(null);
       try {
-        console.log("Fetching price data...");
         const res = await fetch("/api/config/price/price");
         
         if (!res.ok) {
@@ -155,7 +154,7 @@ const TablePriceList = () => {
         );
       },
     }),
-    ...(auth.role === "admin"
+    ...(auth.role === "admin" || auth.role === "company_admin"
       ? [
           {
             header: "Created By",

@@ -13,7 +13,7 @@ import Image from "next/image";
 import TanStackTable from "../tanStackTableComponents/TanStackTable";
 import AuthContext from "@/pages/context/AuthProvider";
 import { toast } from "react-toastify";
-import { useRouter } from "next/router";
+import { formatQuantityWithUnits } from "@/lib/utils/formatters";
 
 const TableTransfer = () => {
     const { auth } = useContext(AuthContext);
@@ -68,6 +68,11 @@ const TableTransfer = () => {
         {
           header: "Quantity",
           accessorKey: "quantity",
+          cell: ({ row }) => {
+            const transaction = row.original;
+            const product = transaction.productId;
+            return formatQuantityWithUnits(transaction.quantity, product);
+          }
         },
         {
           header: "Total Price",
@@ -76,9 +81,14 @@ const TableTransfer = () => {
         {
           header: "Remaining",
           accessorKey: "remaining",
+          cell: ({ row }) => {
+            const transaction = row.original;
+            const product = transaction.productId;
+            return formatQuantityWithUnits(transaction.remaining, product);
+          }
         },    
            
-        ...(auth.role === "admin"
+        ...(auth.role === "admin" || auth.role === "company_admin"
             ? [
                 {
                     header: "Created By",

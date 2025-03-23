@@ -49,7 +49,6 @@ export default async function Login(req, res) {
       return sendBadRequest(res, "Email and password are required");
     }
 
-    console.log(`Login attempt for email: ${email}`);
 
     // Important: Connect to database before using models
     await connect();
@@ -89,33 +88,21 @@ export default async function Login(req, res) {
       return sendUnauthorized(res, "Company subscription has expired");
     }
 
-    // Debug password properties
-    console.log(`Password exists: ${!!user.password}`);
-    console.log(`Password length: ${user.password ? user.password.length : 0}`);
     
-    // Try multiple password verification approaches
+    
+    // Verify password using bcrypt directly
     let isValidPassword = false;
-    
-    // First try the model's comparePassword method
-    if (typeof user.comparePassword === 'function') {
-      console.log(`Using model comparePassword method for ${email}`);
-      try {
-        isValidPassword = await user.comparePassword(password);
-        console.log(`Model password comparison result: ${isValidPassword}`);
-      } catch (err) {
-        console.error(`Error using model comparePassword: ${err.message}`);
+    try {
+      isValidPassword = await bcrypt.compare(password, user.password);
+      
+      console.log(`Password verification result: ${isValidPassword}`);
+      if (!isValidPassword) {
+        console.log('Password verification failed. Stored password hash:', user.password);
       }
-    }
-    
-    // If that fails, try direct bcrypt comparison
-    if (!isValidPassword) {
-      try {
-        console.log(`Using direct bcrypt comparison for ${email}`);
-        isValidPassword = await bcrypt.compare(password, user.password);
-        console.log(`Direct bcrypt comparison result: ${isValidPassword}`);
-      } catch (err) {
-        console.error(`Error using direct bcrypt comparison: ${err.message}`);
-      }
+    } catch (err) {
+      console.error(`Error during password verification: ${err.message}`);
+      console.error('Error details:', err);
+      return sendError(res, "Error during password verification");
     }
 
     if (!isValidPassword) {

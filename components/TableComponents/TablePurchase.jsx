@@ -15,6 +15,7 @@ import AuthContext from "@/pages/context/AuthProvider";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import { formatQuantity, debugQuantity, formatPurchaseQuantity } from "@/lib/client/quantityUtils";
+import { formatQuantityWithUnits } from "@/lib/utils/formatters";
 
 const TablePurchase = () => {
     const { auth } = useContext(AuthContext);
@@ -46,7 +47,6 @@ const TablePurchase = () => {
               return toast.error(`Something went wrong! ${res.status}`);
             }
             const data = await res.json();
-            
             // Debug the first item
             if (data?.data?.length > 0) {
               console.log("Sample purchase data:", data.data[0]);
@@ -73,11 +73,7 @@ const TablePurchase = () => {
 
       // Columns
       const columns = [
-        {
-          header: "Transaction Type",
-          accessorKey: "transactionType",
-          cell: (info) => info.getValue()?.charAt(0).toUpperCase() + info.getValue()?.slice(1) || "Purchase"
-        },
+        
         {
             header: "Store",
             accessorFn: (row)=> row.fromStore?.name,
@@ -88,31 +84,12 @@ const TablePurchase = () => {
         },
         {
           header: "Quantity",
+          accessorKey: "quantity",
           cell: ({ row }) => {
             const transaction = row.original;
-            
-            // Show debug info if enabled
-            if (debug) {
-              return <pre>{JSON.stringify(debugQuantity(transaction.quantity), null, 2)}</pre>;
-            }
-            
-            // If formattedQuantity is already provided, use it
-            if (transaction.formattedQuantity) {
-              return transaction.formattedQuantity;
-            }
-            
-            // Use our purchase-specific formatting utility
             const product = transaction.productId;
-            if (product) {
-              return formatPurchaseQuantity(
-                transaction.quantity, 
-                product.measurment_name
-              );
-            }
-            
-            // Fallback: just show the quantity
-            return transaction.quantity || '0';
-          },
+            return formatQuantityWithUnits(transaction.quantity, product);
+          }
         },
         {
           header: "Total Price",
@@ -121,33 +98,12 @@ const TablePurchase = () => {
         },
         {
           header: "Remaining",
+          accessorKey: "remaining",
           cell: ({ row }) => {
             const transaction = row.original;
-            
-            // Show debug info if enabled
-            if (debug) {
-              return <pre>{JSON.stringify(debugQuantity(transaction.remaining), null, 2)}</pre>;
-            }
-            
-            // If formattedRemaining is already provided, use it
-            if (transaction.formattedRemaining) {
-              return transaction.formattedRemaining;
-            }
-            
-            // For remaining values, we still use the full formatting
             const product = transaction.productId;
-            if (product) {
-              return formatQuantity(
-                transaction.remaining, 
-                product.measurment_name, 
-                product.sub_measurment_name, 
-                product.sub_measurment_value || 1
-              );
-            }
-            
-            // Fallback: just show the remaining value
-            return transaction.remaining || '0';
-          },
+            return formatQuantityWithUnits(transaction.remaining, product);
+          }
         },
         {
           header: "Tin",
@@ -158,7 +114,7 @@ const TablePurchase = () => {
           accessorKey: "date",
           cell: (info) => info.getValue() ? new Date(info.getValue()).toLocaleDateString() : 'N/A'
         },
-        ...(auth.role === "admin"
+        ...(auth.role === "admin" || auth.role === "company_admin"
             ? [
                 {
                     header: "Created By",

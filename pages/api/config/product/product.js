@@ -41,8 +41,7 @@ async function handler(req, res) {
         const products = await Product.find(companyFilter)
           .sort("-createdAt")
           .populate("user", "name")
-          .lean();
-        console.log(products)
+          .lean();        
         return sendSuccess(res, "Products retrieved successfully", products);
       }
 

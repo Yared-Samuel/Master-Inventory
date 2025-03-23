@@ -1,7 +1,9 @@
 import connect from "@/lib/db";
-import User from "@/models/userModel";
+import { getUserModel } from "@/lib/models";
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
 import { sendSuccess, sendError } from "@/lib/utils/responseHandler";
+
+const User = getUserModel();
 
 async function handler(req, res) {
   try {
@@ -13,7 +15,9 @@ async function handler(req, res) {
     
     await connect();
     
-    // Get user information (withTenant middleware already adds user to req)
+    // The withTenant middleware decodes the JWT token from the request cookies
+    // and adds the decoded user data (id, role, companyId) to req.user
+    // This data was originally set during login/registration
     const { id, role, companyId } = req.user;
     
     // Fetch complete user data if needed

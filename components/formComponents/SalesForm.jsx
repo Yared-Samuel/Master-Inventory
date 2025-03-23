@@ -91,7 +91,7 @@ const SalesForm = () => {
 
     const numQty = Number(qty);
     
-    if (type === 'main' && prod.sub_measurment_name) {
+    if (type === 'main' && prod.sub_measurment_name) { 
       // Convert from main to sub (e.g., crates to bottles)
       const subUnits = numQty * prod.sub_measurment_value;
       setConversionPreview({
@@ -187,8 +187,7 @@ const SalesForm = () => {
         },
         body: JSON.stringify({
           productId, 
-          quantity: actualQuantity,  // This is the converted quantity in main units (e.g., crates)
-          originalQuantity: Number(quantity),  // Original input (e.g., bottles)
+          quantity: Number(quantity),  // Original input (e.g., bottles)
           measurementType,
           fromStore, 
           date: date || new Date().toISOString().split('T')[0]

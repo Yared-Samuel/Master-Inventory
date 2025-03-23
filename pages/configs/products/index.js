@@ -14,8 +14,7 @@ const ProductListPage = () => {
       <div className="px-4">
         <TitleComponent pathName={pathName}>Product</TitleComponent>
         <ProductForm />        
-        <TableProductList />
-        
+        <TableProductList />        
       </div>
     
   );

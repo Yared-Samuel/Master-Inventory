@@ -1,11 +1,12 @@
 import connect from "@/lib/db";
-import Transaction from "@/models/inventoryModel";
-import Product from "@/models/productModel";
+import { getInventoryModel } from "@/lib/models";
 import { getIdFromToken } from "@/lib/getDataFromToken";
 import { 
   encodeQuantityForStorage,
   convertDecimalToWholeUnitsAndRemainder 
 } from "@/lib/inventory/inventoryUtils";
+
+const Transaction = getInventoryModel();
 
 export default async function handler(req, res) {
   try {

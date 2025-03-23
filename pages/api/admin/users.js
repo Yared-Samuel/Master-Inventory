@@ -1,9 +1,12 @@
-import connect from "@/lib/db";
-import User from "@/models/userModel";
-import Company from "@/models/companyModel";
+
+
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
 import { sendSuccess, sendError, sendBadRequest, sendNotFound, sendUnauthorized } from "@/lib/utils/responseHandler";
 import bcrypt from "bcryptjs";
+
+import { getUserModel, getCompanyModel  } from "@/lib/models";
+const User = getUserModel()
+const Company = getCompanyModel()
 
 async function handler(req, res) {
   try {
@@ -91,7 +94,7 @@ async function createUser(data) {
   }
   
   // Create password hash
-  const salt = await bcrypt.genSalt(10);
+  const salt = 10;
   const hashedPassword = await bcrypt.hash(password, salt);
   
   // Create user

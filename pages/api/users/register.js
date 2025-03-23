@@ -1,11 +1,13 @@
 import { generateToken } from "@/actions/jwt";
 import connect from "@/lib/db";
-import Token from "@/models/tokenModel";
-import User from "@/models/userModel";
-import Company from "@/models/companyModel";
+import { getUserModel, getCompanyModel, getTokenModel } from "@/lib/models";
 import { sendSuccess, sendError, sendBadRequest, sendConflict } from "@/lib/utils/responseHandler";
 import { serialize } from "cookie";
 import mongoose from "mongoose";
+
+const User = getUserModel();
+const Company = getCompanyModel();
+const Token = getTokenModel();
 
 export default async function Register(req, res) {
   const { name, email, password, role, companyName, companyId } = req.body;
@@ -25,12 +27,14 @@ export default async function Register(req, res) {
     return sendBadRequest(res, "Company ID is required for user registration");
   }
 
+  // Start a MongoDB transaction session to ensure data consistency
+  // This allows us to perform multiple database operations atomically
+  // If any operation fails, all changes will be rolled back
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    await connect();
-    
+    await connect();    
     // Check if email already exists
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
@@ -50,7 +54,9 @@ export default async function Register(req, res) {
         createdBy: null // Will update this after user creation
       });
       
+      // Save the new company document to the database within the transaction session
       const company = await newCompany.save({ session });
+      // Get the generated _id from the saved company and store it for the user
       userCompanyId = company._id;
     } 
     // If joining existing company, verify it exists
@@ -63,19 +69,22 @@ export default async function Register(req, res) {
       }
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     // Create a new user
     const newUser = new User({
       name,
       email,
-      password, // Password hashing now handled by model pre-save hook
+      password : hashedPassword,
       role,
       companyId: userCompanyId,
       isActive: true,
       lastLogin: new Date()
     });
     
-    // Save the user to the database
+    // Save the user to the database    
     const user = await newUser.save({ session });
+    
     
     // If this is a company admin creating a new company, update the company's createdBy field
     if (role === 'company_admin' && companyName && !companyId) {

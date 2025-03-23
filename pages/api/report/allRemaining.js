@@ -1,12 +1,13 @@
 import connect from "@/lib/db";
-import Transaction from "@/models/inventoryModel";
+import { getInventoryModel } from "@/lib/models";
 import { getIdFromToken } from "@/lib/getDataFromToken";
 import { sendSuccess, sendError, sendBadRequest } from "@/lib/utils/responseHandler";
 import { ObjectId } from "mongodb";
 import { 
   decodeQuantityFromStorage,
-  convertSubUnitsToWholeUnits
 } from "@/lib/inventory/inventoryUtils";
+
+const Transaction = getInventoryModel();
 
 export default async function handler(req, res) {
   try {

@@ -30,7 +30,6 @@ const TableProductList = () => {
   
 
   const router = useRouter();
-  console.log(auth)
 
   // fetch Data
   useEffect(() => {
@@ -84,8 +83,8 @@ const TableProductList = () => {
           ? `${row.measurment_name}=${row.sub_measurment_value} ${row.sub_measurment_name}`
           : row.measurment_name,
     },
-    // ...(auth.role === "admin"
-    //   ? [
+    ...(auth.role === "admin" || auth.role === "company_admin"
+      ? [
           {
             header: "Created By",
             accessorFn: (row) => row.user.name,
@@ -111,8 +110,8 @@ const TableProductList = () => {
               </div>
             ),
           },
-      //   ]
-      // : []),
+        ]
+      : []),
   ];
   const table = useReactTable({
     data: data || [],

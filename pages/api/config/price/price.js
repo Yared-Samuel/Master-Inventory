@@ -32,7 +32,7 @@ async function handler(req, res) {
       }
 
       case "GET": {
-        const filter = req.user.role === 'admin' 
+        const filter = req.user.role === 'admin'
           ? {} 
           : { companyId: req.user.companyId };
 

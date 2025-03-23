@@ -4,15 +4,12 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getFilteredRowModel,
-  createColumnHelper,
   getSortedRowModel,
 } from "@tanstack/react-table";
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
+import { useState, useEffect, useMemo } from "react";
 import TanStackTable from "../tanStackTableComponents/TanStackTable";
 import { toast } from "react-toastify";
-import { decodeQuantity, formatQuantity, debugQuantity } from "@/lib/client/quantityUtils";
+import { formatQuantityWithUnits } from "@/lib/utils/formatters";
 
 const TableBalance = () => {
   const [sorting, setSorting] = useState([]);
@@ -20,7 +17,8 @@ const TableBalance = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [debug, setDebug] = useState(false);
+  const [selectedStore, setSelectedStore] = useState("all");
+  const [selectedProduct, setSelectedProduct] = useState("all");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,12 +30,6 @@ const TableBalance = () => {
           return toast.error(`Something went wrong! ${res.status}`);
         }
         const data = await res.json();
-        
-        // Log the first product to debug
-        if (data?.data?.stores?.length > 0 && data.data.stores[0].products.length > 0) {
-          console.log("Sample product data:", data.data.stores[0].products[0]);
-        }
-        
         setData(data.data);
       } catch (error) {
         toast.error("not found");
@@ -49,7 +41,8 @@ const TableBalance = () => {
     fetchData();
   }, []);
 
-  const columns = [
+  // Memoize the columns to prevent unnecessary re-creation
+  const columns = useMemo(() => [
     {
       header: "Store",
       accessorFn: (row) => row.storeName,
@@ -63,30 +56,28 @@ const TableBalance = () => {
       cell: ({ row }) => {
         const product = row.original;
         
-        // If we have a debug flag set, return detailed debug info
-        if (debug) {
-          const debugInfo = debugQuantity(product.remaining);
-          return <pre>{JSON.stringify(debugInfo, null, 2)}</pre>;
+        // Get the remaining value
+        const remaining = Number(product.remaining || product.encodedRemaining || 0);
+        
+        // Handle products with sub-measurement units (like bottle in a create)
+        if (product.subMeasurementUnit && product.subMeasurementValue > 1) {
+          const wholeUnits = Math.floor(remaining / product.subMeasurementValue);
+          const remainderSubUnits = remaining % product.subMeasurementValue;
+          
+          if (wholeUnits > 0 && remainderSubUnits > 0) {
+            return `${wholeUnits} ${product.measurementUnit} and ${remainderSubUnits} ${product.subMeasurementUnit}`;
+          } else if (wholeUnits > 0) {
+            return `${wholeUnits} ${product.measurementUnit}`;
+          } else {
+            return `${remainderSubUnits} ${product.subMeasurementUnit}`;
+          }
         }
         
-        // If displayRemaining from API is available and not empty, use it
-        if (product.displayRemaining) {
-          return product.displayRemaining;
-        }
-        
-        // Use our client-side utility for consistent formatting
-        return formatQuantity(
-          product.remaining, 
-          product.measurementUnit, 
-          product.subMeasurementUnit, 
-          product.subMeasurementValue || 1
-        );
+        // For products with no sub-measurement
+        return `${remaining} ${product.measurementUnit}`;
       }
     },
-    {
-      header: "Unit",
-      accessorKey: "measurementUnit",
-    },
+    
     {
       header: "Last Updated",
       accessorKey: "lastUpdated",
@@ -97,25 +88,163 @@ const TableBalance = () => {
       accessorKey: "lastTransactionType",
       cell: ({ getValue }) => getValue() ? getValue().charAt(0).toUpperCase() + getValue().slice(1) : 'N/A',
     },
-  ];
+  ], []);
 
-  // Flatten the data structure for the table
-  const flattenedData = data?.stores?.flatMap(store =>
-    store.products.map(product => ({
-      storeId: store.storeId,
-      storeName: store.storeName,
-      productId: product.productId,
-      productName: product.productName,
-      remaining: product.encodedRemaining, // Use the encoded value directly
-      displayRemaining: product.displayRemaining, // Use display string from API if available
-      measurementUnit: product.measurementUnit,
-      subMeasurementUnit: product.subMeasurementUnit,
-      subMeasurementValue: product.subMeasurementValue,
-      lastUpdated: product.lastUpdated,
-      lastTransactionType: product.lastTransactionType,
-    }))
-  ) || [];
+  // Memoize store options to prevent recalculation on every render
+  const storeOptions = useMemo(() => 
+    data?.stores?.map(store => ({
+      id: store.storeId,
+      name: store.storeName
+    })) || [], 
+    [data?.stores]
+  );
 
+  // Get all unique products across all stores
+  const productOptions = useMemo(() => {
+    if (!data?.stores?.length) return [];
+    
+    // Create a Map to deduplicate products
+    const productsMap = new Map();
+    
+    data.stores.forEach(store => {
+      store.products.forEach(product => {
+        if (!productsMap.has(product.productId)) {
+          productsMap.set(product.productId, {
+            id: product.productId,
+            name: product.productName
+          });
+        }
+      });
+    });
+    
+    // Convert Map to array
+    return Array.from(productsMap.values());
+  }, [data?.stores]);
+
+  // Handle store selection change
+  const handleStoreChange = (e) => {
+    setSelectedStore(e.target.value);
+  };
+
+  // Handle product selection change
+  const handleProductChange = (e) => {
+    setSelectedProduct(e.target.value);
+  };
+
+  // Memoize the flattened data to prevent recalculation on every render
+  const flattenedData = useMemo(() => {
+    if (!data?.stores?.length) return [];
+    
+    // Case 1: Only product selected (show sum across all stores)
+    if (selectedProduct !== "all" && selectedStore === "all") {
+      // First, gather all occurrences of this product across stores
+      const productInstances = [];
+      
+      data.stores.forEach(store => {
+        const productInStore = store.products.find(p => p.productId === selectedProduct);
+        if (productInStore) {
+          productInstances.push({
+            storeId: store.storeId,
+            storeName: store.storeName,
+            ...productInStore
+          });
+        }
+      });
+      
+      // If no instances found, return empty array
+      if (productInstances.length === 0) return [];
+      
+      // If only one instance, return it directly
+      if (productInstances.length === 1) {
+        const instance = productInstances[0];
+        return [{
+          storeId: instance.storeId,
+          storeName: instance.storeName,
+          productId: instance.productId,
+          productName: instance.productName,
+          remaining: instance.encodedRemaining,
+          displayRemaining: instance.displayRemaining,
+          measurementUnit: instance.measurementUnit,
+          subMeasurementUnit: instance.subMeasurementUnit,
+          subMeasurementValue: instance.subMeasurementValue,
+          lastUpdated: instance.lastUpdated,
+          lastTransactionType: instance.lastTransactionType,
+        }];
+      }
+      
+      // Calculate combined remaining quantity
+      let totalRemaining = 0;
+      productInstances.forEach(instance => {
+        totalRemaining += Number(instance.encodedRemaining || 0);
+      });
+      
+      // Use the first instance for product details
+      const firstInstance = productInstances[0];
+      
+      // Check if this product has sub-measurement units
+      let displayRemaining;
+      if (firstInstance.subMeasurementUnit && firstInstance.subMeasurementValue > 1) {
+        // Calculate whole units and remainder 
+        const wholeUnits = Math.floor(totalRemaining / firstInstance.subMeasurementValue);
+        const remainderSubUnits = totalRemaining % firstInstance.subMeasurementValue;
+        
+        if (wholeUnits > 0 && remainderSubUnits > 0) {
+          displayRemaining = `${wholeUnits} ${firstInstance.measurementUnit} and ${remainderSubUnits} ${firstInstance.subMeasurementUnit}`;
+        } else if (wholeUnits > 0) {
+          displayRemaining = `${wholeUnits} ${firstInstance.measurementUnit}`;
+        } else {
+          displayRemaining = `${remainderSubUnits} ${firstInstance.subMeasurementUnit}`;
+        }
+      } else {
+        // No sub-measurement
+        displayRemaining = `${totalRemaining} ${firstInstance.measurementUnit}`;
+      }
+      
+      // Return a single combined record
+      return [{
+        storeId: "multiple",
+        storeName: "All Stores",
+        productId: firstInstance.productId,
+        productName: firstInstance.productName,
+        remaining: totalRemaining,
+        measurementUnit: firstInstance.measurementUnit,
+        subMeasurementUnit: firstInstance.subMeasurementUnit,
+        subMeasurementValue: firstInstance.subMeasurementValue,
+        lastUpdated: new Date().toISOString(),
+        lastTransactionType: "combined",
+      }];
+    }
+    
+    // Case 2: Standard filtering (specific store/product or all)
+    return data.stores.flatMap(store => {
+      // Skip this store if a specific store is selected and it's not this one
+      if (selectedStore !== "all" && store.storeId !== selectedStore) {
+        return [];
+      }
+      
+      // Filter products if a specific product is selected
+      let productsToInclude = store.products;
+      if (selectedProduct !== "all") {
+        productsToInclude = store.products.filter(p => p.productId === selectedProduct);
+      }
+      
+      // Map the filtered products
+      return productsToInclude.map(product => ({
+        storeId: store.storeId,
+        storeName: store.storeName,
+        productId: product.productId,
+        productName: product.productName,
+        remaining: product.encodedRemaining,
+        measurementUnit: product.measurementUnit,
+        subMeasurementUnit: product.subMeasurementUnit,
+        subMeasurementValue: product.subMeasurementValue,
+        lastUpdated: product.lastUpdated,
+        lastTransactionType: product.lastTransactionType,
+      }));
+    });
+  }, [data?.stores, selectedStore, selectedProduct]);
+
+  // Limit the initial page size for better performance
   const table = useReactTable({
     data: flattenedData,
     columns,
@@ -125,25 +254,70 @@ const TableBalance = () => {
     state: {
       sorting: sorting,
       globalFilter: filtering,
+      pagination: {
+        pageIndex: 0,
+        pageSize: 25, // Set a reasonable page size
+      },
     },
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     onGlobalFilterChange: setFiltering,
   });
 
+  // Render error message if there was an error loading data
+  if (error) {
+    return (
+      <div className="bg-red-100 p-4 rounded-md shadow-md text-red-800">
+        Error loading data: {error}
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="bg-slate-100 mt-4 py-1 rounded-md shadow-md">
-        {process.env.NODE_ENV === "development" && (
-          <div className="p-2">
-            <button 
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm"
-              onClick={() => setDebug(!debug)}
+        <div className="p-2 flex flex-wrap gap-4">
+          {/* Store selection dropdown */}
+          <div className="flex items-center space-x-2">
+            <label htmlFor="store-select" className="text-sm font-medium">
+              Select Store:
+            </label>
+            <select
+              id="store-select"
+              value={selectedStore}
+              onChange={handleStoreChange}
+              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-1.5"
             >
-              {debug ? "Hide Debug Info" : "Show Debug Info"}
-            </button>
+              <option value="all">All Stores</option>
+              {storeOptions.map(store => (
+                <option key={store.id} value={store.id}>
+                  {store.name}
+                </option>
+              ))}
+            </select>
           </div>
-        )}
+          
+          {/* Product selection dropdown */}
+          <div className="flex items-center space-x-2">
+            <label htmlFor="product-select" className="text-sm font-medium">
+              Select Product:
+            </label>
+            <select
+              id="product-select"
+              value={selectedProduct}
+              onChange={handleProductChange}
+              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-1.5"
+            >
+              <option value="all">All Products</option>
+              {productOptions.map(product => (
+                <option key={product.id} value={product.id}>
+                  {product.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        
         <TanStackTable
           table={table}
           filtering={filtering}

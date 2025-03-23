@@ -72,6 +72,7 @@ const StoreProductTable = ({ products, storeName, filtering, setFiltering }) => 
 
   return (
     <div className="bg-slate-100 mt-4 py-1 rounded-md shadow-md">
+      <h1>Yared Delete this </h1>
       {process.env.NODE_ENV === "development" && (
         <div className="p-2">
           <button 

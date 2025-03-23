@@ -67,7 +67,19 @@ const menuItems = [
           {
             icon: "/parent.png",
             label: "Sales",
-            href: "/report/sales",
+            href: "/report/daily-sales",
+            visible: ["admin", "company_admin", "storeMan", "barMan", "finance"],
+          },
+          {
+            icon: "/parent.png",
+            label: "Daily Purchase",
+            href: "/report/daily-purchase",
+            visible: ["admin", "company_admin", "storeMan", "barMan", "finance"],
+          },
+          {
+            icon: "/parent.png",
+            label: "Transfer",
+            href: "/report/transfer",
             visible: ["admin", "company_admin", "storeMan", "barMan", "finance"],
           },
           // Add more report types as needed
