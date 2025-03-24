@@ -4,6 +4,8 @@ import { AuthProvider } from "./context/AuthProvider";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import dynamic from "next/dynamic";
+import "../styles/globals.css";
+
 // config.autoAddCss = false;
 
 // Dynamically import AuthStatus with no SSR to avoid hydration issues

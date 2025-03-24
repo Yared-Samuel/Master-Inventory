@@ -17,7 +17,7 @@ export default async function handler(req, res) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: -1, // Expired
-      path: "/"
+      path: "/login"
     }));
 
     return sendSuccess(res, "Logged out successfully");

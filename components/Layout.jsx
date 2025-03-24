@@ -69,7 +69,7 @@ const Layout = ({children}) => {
         ${isSidebarOpen ? 'lg:ml-0' : 'lg:ml-0'}
         bg-gray-50
       `}>
-        <Navbar />
+        {/* <Navbar /> */}
         {children}
       </main>
     </div>

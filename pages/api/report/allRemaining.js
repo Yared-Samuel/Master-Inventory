@@ -2,7 +2,6 @@ import connect from "@/lib/db";
 import { getInventoryModel } from "@/lib/models";
 import { getIdFromToken } from "@/lib/getDataFromToken";
 import { sendSuccess, sendError, sendBadRequest } from "@/lib/utils/responseHandler";
-import { ObjectId } from "mongodb";
 import { 
   decodeQuantityFromStorage,
 } from "@/lib/inventory/inventoryUtils";

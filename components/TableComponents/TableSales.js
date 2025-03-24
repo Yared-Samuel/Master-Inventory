@@ -62,10 +62,15 @@ const TableSales = () => {
 
   const columns = [
     {
-      header: "Transaction Type",
-      accessorKey: "transactionType",
-      cell: (info) => info.getValue().charAt(0).toUpperCase() + info.getValue().slice(1)
+      header: "Date",
+      accessorKey: "date",
+      cell: (info) => new Date(info.getValue()).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
     },
+
     {
       header: "Store",
       accessorFn: (row) => row.fromStore?.name,
@@ -88,54 +93,17 @@ const TableSales = () => {
       accessorKey: "totalPrice",
       cell: (info) => formatCurrency(info.getValue())
     },    
-    {
-      header: "Remaining",
-      accessorKey: "remaining",
-      cell: ({ row }) => {
-        const transaction = row.original;
-        const product = transaction.productId;
-        return formatQuantityWithUnits(transaction.remaining, product);
-      }
-    },    
-    {
-      header: "Date",
-      accessorKey: "date",
-      cell: (info) => new Date(info.getValue()).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      })
-    },
+    // {
+    //   header: "Remaining",
+    //   accessorKey: "remaining",
+    //   cell: ({ row }) => {
+    //     const transaction = row.original;
+    //     const product = transaction.productId;
+    //     return formatQuantityWithUnits(transaction.remaining, product);
+    //   }
+    // },    
        
-    ...(auth.role === "admin" || auth.role === "company_admin"
-        ? [
-            {
-                header: "Created By",
-                accessorFn: (row) => row.user.name,
-            },
-            {
-                header: "Actions",
-                cell: ({ row }) => (
-                  <div className="">
-                    <Link
-                      href={`#`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setUpdateId(row.original._id);
-                      }}
-                    >
-                      <Image
-                        src={"/icons/edit-icon.svg"}
-                        alt="update"
-                        width={20}
-                        height={20}
-                      />
-                    </Link>
-                  </div>
-                ),
-              },
-        ] : []
-    )
+
   ];
 
   const table = useReactTable({

@@ -72,7 +72,7 @@ const menuItems = [
           },
           {
             icon: "/parent.png",
-            label: "Daily Purchase",
+            label: "Purchase",
             href: "/report/daily-purchase",
             visible: ["admin", "company_admin", "storeMan", "barMan", "finance"],
           },
@@ -142,19 +142,18 @@ const menuItems = [
                 
                 if (response.ok) {
                   const result = await response.json();
-                  console.log("Logout successful:", result);
                   
                   // Force page reload to clear state
-                  window.location.href = '/';
+                  window.location.href = '/login';
                 } else {
                   console.error('Logout failed:', response.status);
                   // Fallback to redirect even if the API fails
-                  window.location.href = '/';
+                  window.location.href = '/login';
                 }
               } catch (error) {
                 console.error('Logout error:', error);
                 // Fallback to redirect even if there's an error
-                window.location.href = '/';
+                window.location.href = '/login';
               }
             }
           }

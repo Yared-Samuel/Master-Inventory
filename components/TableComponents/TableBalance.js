@@ -78,16 +78,7 @@ const TableBalance = () => {
       }
     },
     
-    {
-      header: "Last Updated",
-      accessorKey: "lastUpdated",
-      cell: ({ getValue }) => getValue() ? new Date(getValue()).toLocaleDateString() : 'N/A',
-    },
-    {
-      header: "Last Transaction",
-      accessorKey: "lastTransactionType",
-      cell: ({ getValue }) => getValue() ? getValue().charAt(0).toUpperCase() + getValue().slice(1) : 'N/A',
-    },
+    
   ], []);
 
   // Memoize store options to prevent recalculation on every render

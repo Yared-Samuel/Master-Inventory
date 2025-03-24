@@ -2,15 +2,7 @@ import connect from "@/lib/db";
 import { getInventoryModel, getProductModel } from "@/lib/models";
 import { protectRoute } from "@/lib/middleware/roleMiddleware";
 import { sendSuccess, sendError, sendCreated, sendBadRequest } from "@/lib/utils/responseHandler";
-import { 
-  checkInventoryAvailability, 
-  isValidQuantity, 
-  isValidObjectId,
-  convertSubUnitsToWholeUnits,
-  encodeQuantityForStorage,
-  decodeQuantityFromStorage,
-  calculateInventoryOperation
-} from "@/lib/inventory/inventoryUtils";
+
 
 async function handler(req, res) {
   try {
