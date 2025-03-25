@@ -1,16 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
 import Head from "next/head";
-import { WifiIcon, ChevronLeftIcon } from "@heroicons/react/24/solid";
-import { ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
-import { useEffect, useRef } from "react";
+import Gallery from "@/components/mainPage/Gallery";
+import CompanyShow from "@/components/mainPage/CompanyShow";
+
 
 export default function Home() {
   return (
-    <div className="  flex items-center justify-center bg-gradient-to-b from-purple-300 to-purple-400">
+    <div className="relative flex items-center justify-center bg-gradient-to-b from-purple-300 to-purple-400">
+      {/* <div className=" absolute top-50 left-50 w-full h-full">
+        <Image className=" " src="/main-page/wave.svg" alt="wave" width={20000} height={20000} />
+        <Image className=" " src="/main-page/waveInv.svg" alt="wave" width={20000} height={20000} />
+        </div> */}
       <Head>
         <title>MELA - Introducing Most Technology</title>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/Logo.png" />
       </Head>
       
       {/* Main Card Container */}
@@ -18,6 +22,7 @@ export default function Home() {
         
         {/* Header/Navigation */}
         <header className="flex justify-between items-center p-6 md:p-8">
+        
           {/* Logo */}
           <div className="flex items-center gap-2   border-b-2 border-t-2 border-gray-300 ">
             <div className=" w-12 h-12 flex items-center justify-center">
@@ -29,19 +34,18 @@ export default function Home() {
           {/* Navigation */}
           <nav className="hidden md:flex space-x-8 text-sm">
             <Link href="#" className="text-blue-500 font-medium">HOME</Link>
-            <Link href="#" className="text-gray-500 hover:text-blue-500 transition-colors">CONTACT</Link>
-            <Link href="#" className="text-gray-500 hover:text-blue-500 transition-colors">About Us</Link>
-          </nav>
+            <Link href="/login" className="text-gray-500 hover:text-blue-500 transition-colors">Login here</Link>
+        </nav>
         </header>
         
         {/* Main Content Area */}
-        <div className="flex flex-col md:flex-row">
+        <div className="flex flex-col md:flex-row z-50">
           {/* Left Column - Text & Form */}
           <div className="w-full md:w-1/2 p-6 md:p-10">
             {/* Headings */}
             <h1 className="text-5xl md:text-6xl font-black tracking-tight my-6">
               ULTIMATE<br />
-             <span className="text-[#1066A8]">SOLUTION </span><br/>
+             <span className="text-[#1066A8] ">SOLUTION </span><br/>
               FOR YOUR<br/>
               <span className="text-[#1066A8]">BUSINESS</span>
             </h1>
@@ -51,76 +55,25 @@ export default function Home() {
             <p className="text-gray-600 mb-8 max-w-md font-semibold">
             Seamless digital experiences to <span className="text-[#1066A8] font-bold">boost</span> efficiency, engagement, and growth your <span className="text-[#1066A8] font-bold">Business</span>.
             </p>
-
-            
-
-            
-            {/* Dots Pattern */}
-            <div className="grid grid-cols-8 gap-2 mt-10">
-
-              {[...Array(48)].map((_, i) => (
-                <div key={i} className="w-2 h-2 rounded-full bg-blue-200"></div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Right Column - Image */}
-          <div className="w-full md:w-1/2 relative">
-            {/* Decorative elements */}
-            <div className="absolute top-10 left-10 md:left-0 z-10">
-              <div className="flex space-x-4">
-                <ChevronLeftIcon className="w-8 h-8 text-blue-300 transform rotate-180" />
-                <ChevronLeftIcon className="w-12 h-12 text-blue-400 transform rotate-180" />
-                <ChevronLeftIcon className="w-16 h-16 text-blue-500 transform rotate-180" />
-              </div>
-            </div>
-            
-            {/* Blue circle decoration */}
-            <div className="absolute top-20 right-20 w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center z-10">
-              <div className="w-16 h-16 border-2 border-white rounded-full flex items-center justify-center">
-                <div className="w-10 h-10 border-2 border-white rounded-full"></div>
-              </div>
-            </div>
-            
-            {/* Main image */}
-            <div className="h-full min-h-[400px] relative">
-              <div className="absolute inset-0 bg-teal-400 rounded-full scale-110 transform translate-x-1/4 translate-y-1/12"></div>
-              <Image
-                src="/main-page/phone-fancy.jpg"
-                alt="Business person using 5G technology"
-                fill
-                className="object-cover rounded-full scale-90 transform translate-x-1/4 mix-blend-multiply grayscale"
-                style={{ filter: "hue-rotate(180deg) brightness(1.2)" }}
-              />
             </div>
 
-            
-            
-            {/* Wireless waves overlay */}
-            <div className="absolute bottom-20 ">
-              {[...Array(5)].map((_, i) => (
-                <div 
-                  key={i} 
-                  className="w-40 h-40 border-2 border-blue-300 rounded-full absolute"
-                  style={{
-                    left: `${i * 10}px`,
-                    bottom: `${i * 10}px`,
-                    opacity: 1 - (i * 0.15)
-                  }}
-                ></div>
-              ))}
-            </div>
-            
-            {/* Plus symbol decoration */}
-            <div className="absolute bottom-20 left-20 text-blue-500 text-6xl font-bold">+</div>
-          </div>
+
+
+
+            <Gallery />          
         </div>
+
+      <CompanyShow />
+        
+        
+
         
         {/* Footer */}
-        <div className="bg-white shadow-md rounded-lg py-6 px-8 mt-8 max-w-4xl mx-auto">
+        <div className="bg-white shadow-md rounded-lg py-6  mt-8 max-w-full mx-auto relative">
+        
           <h3 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Contact Us</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
             {/* Phone */}
             <div className="flex items-center space-x-4 group">
               <div className="bg-blue-100 p-3 rounded-full group-hover:bg-blue-200 transition-colors">

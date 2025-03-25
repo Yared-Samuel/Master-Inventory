@@ -1,0 +1,48 @@
+.body {
+  border: 1px solid red;
+}
+
+.gallery {
+    --s: 199px;
+    --g: 31px;
+    display: grid;
+    margin: calc(var(--s) + var(--g));
+  }
+  .gallery > img {
+    grid-area: 1/1;
+    width: var(--s * 3);
+    aspect-ratio: 1.15;
+    object-fit: cover;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+    transform: translate(var(--_x, 0), var(--_y, 0)) scale(var(--_t , 1.5));
+    cursor: pointer;
+    filter: grayscale(60%);
+    transition: 0.5s linear;
+  }
+  .gallery > img:hover {
+    filter: grayscale(0);
+    z-index: 1;
+    --_t: 2;
+  }
+  .gallery.galleryImage1:first-child {
+    --_y: calc(-100% - var(--g));
+  }
+  .gallery > img:nth-child(7) {
+    --_y: calc(100% + var(--g));
+  }
+  .gallery.galleryImage2:nth-child(3),
+  .gallery > img:nth-child(5) {
+    --_x: calc(-75% - 0.87 * var(--g));
+  }
+  .gallery > img:nth-child(4),
+  .gallery > img:nth-child(6) {
+    --_x: calc(75% + 0.87 * var(--g));
+  }
+  .gallery > img:nth-child(3),
+  .gallery > img:nth-child(4) {
+    --_y: calc(-50% - 0.5 * var(--g));
+  }
+  .gallery > img:nth-child(5),
+  .gallery > img:nth-child(6) {
+    --_y: calc(50% + 0.5 * var(--g));
+  }
