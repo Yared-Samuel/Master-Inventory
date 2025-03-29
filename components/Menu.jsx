@@ -4,32 +4,32 @@ const menuItems = [
     items: [
     
       {
-        icon: "/home.png",
+        icon: "/menu-icon/home.svg" ,
         label: "Dashboard",
         href: "/page/dashboard",
         visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
       },
       
       {
-        icon: "/parent.png",
+        icon: "/menu-icon/purchase.svg",
         label: "Purchase",
         href: "/transaction/purchase",
         visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
       },
       {
-        icon: "/parent.png",
+        icon: "/menu-icon/sales.svg",
         label: "Sales",
         href: "/transaction/sales",
         visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
       },
       {
-        icon: "/parent.png",
+        icon: "/menu-icon/transfer.svg",
         label: "Transfer",
         href: "/transaction/transfer",
         visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
       },
       {
-        icon: "/teacher.png",
+        icon: "/menu-icon/config.svg",
         label: "Configs",
         visible: ["admin", "company_admin"],
         subItems: [
@@ -54,39 +54,34 @@ const menuItems = [
         ]
       },
       {
-        icon: "/teacher.png",
+        icon: "/menu-icon/report.svg",
         label: "Report",
-        visible: ["admin", "company_admin", "storeMan", "barMan", "finance"],
+        visible: ["admin", "company_admin"],
         subItems: [
           {
-            icon: "/parent.png",
+            icon: "/menu-icon/balance.svg",
             label: "Balance",
         href: "/report/balance",
-            visible: ["admin", "company_admin", "storeMan", "barMan", "finance"],
+            visible: ["admin", "company_admin"],
           },
           {
-            icon: "/parent.png",
+            icon: "/menu-icon/sales.svg",
             label: "Sales",
             href: "/report/daily-sales",
-            visible: ["admin", "company_admin", "storeMan", "barMan", "finance"],
+            visible: ["admin", "company_admin"],
           },
           {
-            icon: "/parent.png",
+            icon: "/menu-icon/sales.svg",
             label: "Purchase",
             href: "/report/daily-purchase",
-            visible: ["admin", "company_admin", "storeMan", "barMan", "finance"],
+            visible: ["admin", "company_admin"],
           },
-          {
-            icon: "/parent.png",
-            label: "Transfer",
-            href: "/report/transfer",
-            visible: ["admin", "company_admin", "storeMan", "barMan", "finance"],
-          },
+         
           // Add more report types as needed
         ]
       },
       {
-        icon: "/teacher.png",
+        icon: "/menu-icon/admin.svg",
         label: "Admin",
         visible: ["admin"],
         subItems: [
@@ -116,7 +111,7 @@ const menuItems = [
     title: "USER",
     items: [
       {
-        icon: "/profile.png",
+        icon: "/menu-icon/user.svg",
         label: "User",
         visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
         subItems: [
@@ -165,16 +160,18 @@ const menuItems = [
 ];
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useState } from 'react';
-import { role } from '@/lib/data';
+import React, { useContext, useState } from 'react';
 import { useRouter } from 'next/router';
+import { useSession } from 'next-auth/react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import LogoutButton from './LogoutButton';
-
+import AuthContext from '@/pages/context/AuthProvider';
+  
 const Menu = ({ isExpanded }) => {
   const [expandedItems, setExpandedItems] = useState({});
   const router = useRouter();
+  const { auth } = useContext(AuthContext);
+  const userRole = auth.role;
 
   const toggleExpand = (label) => {
     setExpandedItems(prev => ({
@@ -185,85 +182,98 @@ const Menu = ({ isExpanded }) => {
 
   const isActive = (href) => router.pathname === href;
 
+  // Check if an item should be visible for the current user's role
+  const isVisible = (allowedRoles) => {
+   
+    if (!userRole) return false;
+    return allowedRoles.includes(userRole);
+  };
+
   return (
     <div className='mt-4 text-sm'>
       {menuItems.map(section => (
-        <div className='flex flex-col' key={section.title}>
-          <span className={`text-gray-400 font-light transition-all duration-300 
+        <div className='flex flex-col gap-1.5' key={section.title}>
+          <span className={`text-[#0d3761] font-light transition-all duration-300 
             ${isExpanded ? 'opacity-100' : 'opacity-0 h-0'}`}>
             {section.title}
           </span>
           {section.items.map((item) => {
-            if (item.visible.includes(role)) {
+            // Only render if user has permission
+            if (isVisible(item.visible)) {
               if (item.subItems) {
-                // Render expandable item with subitems
-                return (
-                  <div key={item.label}>
-                    <button
-                      onClick={() => toggleExpand(item.label)}
-                      className={`w-full flex items-center ${isExpanded ? 'justify-between' : 'justify-center'} 
-                        text-gray-500 py-1 px-2 rounded-md hover:bg-lamaSkyLight 
-                        ${expandedItems[item.label] ? 'bg-lamaSkyLight' : ''}`}
-                    >
-                      <div className='flex items-center gap-1'>
-                        <Image src={item.icon} alt='' width={20} height={20} />
-                        <span className={`transition-all duration-300 
-                          ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                          {item.label}
-                        </span>
-                      </div>
-                      {isExpanded && (
-                        <span>
-                          {expandedItems[item.label] ? 
-                            <KeyboardArrowUpIcon fontSize="small" /> : 
-                            <KeyboardArrowDownIcon fontSize="small" />
-                          }
-                        </span>
+                // Filter subItems based on visibility
+                const visibleSubItems = item.subItems.filter(subItem => 
+                  isVisible(subItem.visible)
+                );
+
+                // Only render if there are visible subItems
+                if (visibleSubItems.length > 0) {
+                  return (
+                    <div key={item.label}>
+                      <button
+                        onClick={() => toggleExpand(item.label)}
+                        className={`w-full flex items-center ${isExpanded ? 'justify-between' : 'justify-center'} 
+                          text-gray-500 py-1 px-2 rounded-md hover:bg-lamaSkyLight 
+                          ${expandedItems[item.label] ? 'bg-lamaSkyLight' : ''}`}
+                      >
+                        <div className='flex items-center gap-1'>
+                          <Image src={item.icon} alt='' width={20} height={20} color='#135392'/>
+                          <span className={`transition-all duration-300 text-[#135392] font-semibold
+                            ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                            {item.label}
+                          </span>
+                        </div>
+                        {isExpanded && (
+                          <span>
+                            {expandedItems[item.label] ? 
+                              <KeyboardArrowUpIcon fontSize="small" /> : 
+                              <KeyboardArrowDownIcon fontSize="small" />
+                            }
+                          </span>
+                        )}
+                      </button>
+                      {expandedItems[item.label] && isExpanded && (
+                        <div className='ml-7 lg:ml-8 flex flex-col'>
+                          {visibleSubItems.map(subItem => (
+                            <Link
+                              href={subItem.href}
+                              key={subItem.label}
+                              onClick={subItem.onClick ? (e) => subItem.onClick(e, router) : undefined}
+                              className={`flex items-center gap-1 text-gray-500 py-1 px-2 rounded-md 
+                                hover:bg-lamaSkyLight ${isActive(subItem.href) ? 'bg-lamaSkyLight text-[#739dc7]' : ''}`}
+                            >
+                              <Image src={subItem.icon} alt='' width={16} height={16} color='#135392'/>
+                              <span className={`transition-all duration-300 
+                                ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                                {subItem.label}
+                              </span>
+                            </Link>
+                          ))}
+                        </div>
                       )}
-                    </button>
-                    {expandedItems[item.label] && isExpanded && (
-                      <div className='ml-7 lg:ml-8 flex flex-col'>
-                        {item.subItems.map(subItem => {
-                          if (subItem.visible.includes(role)) {
-                            return (
-                              <Link
-                                href={subItem.href}
-                                key={subItem.label}
-                                onClick={subItem.onClick ? (e) => subItem.onClick(e, router) : undefined}
-                                className={`flex items-center gap-1 text-gray-500 py-1 px-2 rounded-md 
-                                  hover:bg-lamaSkyLight ${isActive(subItem.href) ? 'bg-lamaSkyLight text-blue-600' : ''}`}
-                              >
-                                <Image src={subItem.icon} alt='' width={16} height={16} />
-                                <span className={`transition-all duration-300 
-                                  ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                                  {subItem.label}
-                                </span>
-                              </Link>
-                            );
-                          }
-                        })}
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  );
+                }
+              } else {
+                // Regular menu item
+                return (
+                  <Link
+                    href={item.href}
+                    key={item.label}
+                    className={`flex items-center ${isExpanded ? 'justify-start' : 'justify-center'} 
+                      gap-1 text-[#114a82] font-semibold text-[16px] py-1 px-2 rounded-md hover:bg-lamaSkyLight 
+                      tracking-wide ${isActive(item.href) ? 'bg-lamaSkyLight text-blue-600' : ''}`}
+                  >
+                    <Image src={item.icon} alt='' width={25} height={25} />
+                    <span className={`transition-all duration-300 
+                      ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                      {item.label}
+                    </span>
+                  </Link>
                 );
               }
-              // Render regular menu item
-              return (
-                <Link
-                  href={item.href}
-                  key={item.label}
-                  className={`flex items-center ${isExpanded ? 'justify-start' : 'justify-center'} 
-                    gap-1 text-gray-500 py-1 px-2 rounded-md hover:bg-lamaSkyLight 
-                    ${isActive(item.href) ? 'bg-lamaSkyLight text-blue-600' : ''}`}
-                >
-                  <Image src={item.icon} alt='' width={20} height={20} />
-                  <span className={`transition-all duration-300 
-                    ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                    {item.label}
-                  </span>
-                </Link>
-              );
             }
+            return null; // Don't render items user doesn't have access to
           })}
         </div>
       ))}

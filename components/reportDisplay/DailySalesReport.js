@@ -1,13 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import TableSales from "@/components/TableComponents/TableSales";
+import DaillySalesList from "../TableComponents/DaillySalesList";
 
 const DailySalesReport = () => {
-  const [salesData, setSalesData] = useState([]);
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [error, setError] = useState(null);
   const [stores, setStores] = useState([]);
   const [selectedStore, setSelectedStore] = useState("all");
   const [loadingStores, setLoadingStores] = useState(true);
@@ -19,13 +18,14 @@ const DailySalesReport = () => {
       try {
         const res = await fetch('/api/config/store/store');
         if (!res.ok) {
-          return toast.error(`Failed to fetch stores: ${res.status}`);
+          throw new Error(`Failed to fetch stores: ${res.status}`);
         }
         const data = await res.json();
         setStores(data.data || []);
       } catch (error) {
+        console.error("Store fetch error:", error);
+        setError(error)
         toast.error("Failed to fetch stores");
-        console.error(error);
       } finally {
         setLoadingStores(false);
       }
@@ -35,124 +35,83 @@ const DailySalesReport = () => {
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchDailySales = async () => {
       setLoading(true);
+
       try {
-        // Format dates for API
-        const formattedStartDate = startDate.toISOString().split('T')[0];
-        const formattedEndDate = endDate.toISOString().split('T')[0];
-        
-        // Build URL with query parameters
-        let url = `/api/report/daily-sales?startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
-        
-        // Add store filter if a specific store is selected
-        if (selectedStore !== "all") {
-          url += `&storeId=${selectedStore}`;
-        }
-        
-        const res = await fetch(url);
+        const res = await fetch("/api/report/daily-sales")
         if (!res.ok) {
-          console.error(`API error: ${res.status}`);
-          setSalesData([]); // Set empty data instead of showing error
-          return; // Don't show toast on initial load
+          throw new Error(`Failed to fetch daily sales: ${res.status}`);
         }
         const data = await res.json();
-        setSalesData(data.data || []);
+        setData(data.data || []);
+        
       } catch (error) {
-        console.error("Failed to fetch data:", error);
-        setSalesData([]); // Set empty data on error
-      } finally {
+        console.error("Store fetch error:", error);
+        toast.error("Failed to fetch stores");
+      } finally { 
         setLoading(false);
       }
-    };
-    
-    fetchData();
-  }, [startDate, endDate, selectedStore]);
-
-  useEffect(() => {
-    if (salesData?.length > 0) {
-      // Extract unique stores from the data
-      const uniqueStores = Array.from(new Set(
-        salesData.map(item => item.store_id)
-      )).map(storeId => {
-        const storeItem = salesData.find(item => item.store_id === storeId);
-        return {
-          _id: storeId,
-          name: storeItem.storeName || 'Unknown Store'
-        };
-      });
-      
-      setStores(uniqueStores);
     }
-  }, [salesData]);
-
-  const handleStartDateChange = (e) => {
-    setStartDate(new Date(e.target.value));
-  };
-
-  const handleEndDateChange = (e) => {
-    setEndDate(new Date(e.target.value));
-  };
+    fetchDailySales();
+  },[])
 
   const handleStoreChange = (e) => {
     setSelectedStore(e.target.value);
   };
 
+  if (error) {
+    return (
+      <div className="flex justify-center items-center p-4">
+        <div className="text-red-500">
+          Error loading sales data: {error}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="bg-white p-4 rounded-md shadow-sm">
-        
-        
-        <div className="flex flex-wrap gap-4 mb-4">
-          <div className="flex items-center gap-2">
-            <label htmlFor="start-date" className="text-sm font-medium">
-              Start Date:
-            </label>
-            <input
-              id="start-date"
-              type="date"
-              value={startDate.toISOString().split('T')[0]}
-              onChange={handleStartDateChange}
-              className="border rounded-md p-1.5"
-            />
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-xl shadow-xl overflow-hidden">
+          <div className="px-6 py-4 bg-primary-700 border-b border-primary-600">
+            <h1 className="text-2xl font-bold text-white">Daily Sales Report</h1>
           </div>
           
-          <div className="flex items-center gap-2">
-            <label htmlFor="end-date" className="text-sm font-medium">
-              End Date:
-            </label>
-            <input
-              id="end-date"
-              type="date"
-              value={endDate.toISOString().split('T')[0]}
-              onChange={handleEndDateChange}
-              className="border rounded-md p-1.5"
-            />
-          </div>
-          
-          {/* Store selection dropdown */}
-          <div className="flex items-center gap-2">
-            <label htmlFor="store-select" className="text-sm font-medium">
-              Store:
-            </label>
-            <select
-              id="store-select"
-              value={selectedStore}
-              onChange={handleStoreChange}
-              className="border rounded-md p-1.5"
-              disabled={loadingStores}
-            >
-              <option value="all">All Stores</option>
-              {stores.map(store => (
-                <option key={store._id} value={store._id}>
-                  {store.name}
-                </option>
-              ))}
-            </select>
+          <div className="p-6">
+            {/* Store selection dropdown */}
+            <div className="mb-6">
+              <label 
+                htmlFor="store-select" 
+                className="block text-sm font-medium text-secondary-700 mb-2"
+              >
+                Select Store
+              </label>
+              <select
+                id="store-select"
+                value={selectedStore}
+                onChange={handleStoreChange}
+                className="w-full max-w-xs px-3 py-2 rounded-lg border border-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                disabled={loadingStores}
+              >
+                <option value="all">All Stores</option>
+                {stores.map(store => (
+                  <option key={store._id} value={store._id}>
+                    {store.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-700"></div>
+              </div>
+            ) : (
+              <DaillySalesList data={data} loading={loading} />
+            )}
           </div>
         </div>
-        
-        <TableSales data={salesData} loading={loading} />
       </div>
     </div>
   );

@@ -52,7 +52,7 @@ const TableStoreList = () => {
         const data = await res.json();
         setData(data.data);
       } catch (error) {
-        toast.error("not found");
+        toast.error("Data not found");
         setError(error.message);
       } finally {
         setLoading(false);

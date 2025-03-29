@@ -8,12 +8,11 @@ import {
   getSortedRowModel,
 } from "@tanstack/react-table";
 import { useState, useContext, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
+
 import TanStackTable from "../tanStackTableComponents/TanStackTable";
 import AuthContext from "@/pages/context/AuthProvider";
 import { toast } from "react-toastify";
-import { useRouter } from "next/router";
+
 import { formatQuantityWithUnits } from "@/lib/utils/formatters";
 
 const TableSales = () => {

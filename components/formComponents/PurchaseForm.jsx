@@ -26,7 +26,7 @@ const PurchaseForm = () => {
     const getProduct = async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/config/product/product");
+        const res = await fetch("/api/config/product/productForPurchase");
         if (!res.ok) {
           return toast.error("Something went wrong!");
         }

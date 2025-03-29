@@ -93,6 +93,7 @@ export default async function Login(req, res) {
     // Verify password using bcrypt directly
     let isValidPassword = false;
     try {
+      console.log(password, user.password)
       isValidPassword = await bcrypt.compare(password, user.password);
       
       console.log(`Password verification result: ${isValidPassword}`);

@@ -42,12 +42,12 @@ const Layout = ({children}) => {
         <div className="flex items-center justify-between mb-6">
           <div
             
-            className="flex items-center gap-1 lg:block"
+            className="flex border-b-2 border-t-2 border-gray-300"
           >
-            <Image src={"/logo.svg"} alt="logo" width={24} height={24} />
-            {/* <span className={`font-bold text-sm transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
-              Store
-            </span> */}
+            <Image src={"/Logo.png"} alt="logo" width={30} height={30} />
+            <span className={`text-xl font-bold text-[#1066A8] transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
+            <span className={`${isSidebarOpen ? '' : 'hidden'}`}>MELA</span>
+            </span>
           </div>
           
           {/* Toggle Button for large screens */}

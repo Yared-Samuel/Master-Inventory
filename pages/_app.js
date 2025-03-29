@@ -5,6 +5,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import dynamic from "next/dynamic";
 import "../styles/globals.css";
+import { SessionProvider } from 'next-auth/react';
 
 
 
@@ -16,14 +17,16 @@ const AuthStatus = dynamic(() => import("@/components/AuthStatus"), { ssr: false
 export default function App({ Component, pageProps: { session, ...pageProps } }) {
   const getLayout = Component.getLayout || ((page) => page);
   return (
-    <AuthProvider>
-      {getLayout( 
-        <>
-        <Component {...pageProps} />
-        <ToastContainer />
-        {process.env.NODE_ENV === "development" && <AuthStatus />}
-        </>
-      )} 
-    </AuthProvider>    
+    <SessionProvider session={session}>
+      <AuthProvider>
+        {getLayout( 
+          <>
+          <Component {...pageProps} />
+          <ToastContainer />
+          {process.env.NODE_ENV === "development" && <AuthStatus />}
+          </>
+        )} 
+      </AuthProvider>    
+    </SessionProvider>
   );
 }

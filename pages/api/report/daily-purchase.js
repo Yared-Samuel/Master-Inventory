@@ -1,120 +1,150 @@
-import { connect } from "@/lib/db";
-
+import connect from "@/lib/db";
+import { protectRoute } from "@/lib/middleware/roleMiddleware";
+import { getInventoryModel } from "@/lib/models";
 import mongoose from "mongoose";
 
-export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method not allowed" });
+async function handler(req, res) {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized - User data not available'
+    });
   }
 
+  switch (req.method) {
+    case 'GET':
+      return await getPurchaseReport(req, res, req.user.companyId, req.user.role);
+    default:
+      return res.status(405).json({ 
+        success: false, 
+        message: 'Method not allowed' 
+      });
+  }
+}
+
+async function getPurchaseReport(req, res, companyId, userRole) {
   try {
-    // Connect to database using Mongoose
     await connect();
-    
-    // Get date range from query params
-    const { startDate, endDate } = req.query;
-    
-    // Validate date inputs
-    if (!startDate || !endDate) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Start date and end date are required" 
-      });
-    }
+    const Purchase = getInventoryModel("purchases");
 
-    // Parse dates
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    // Set end date to end of day
-    end.setHours(23, 59, 59, 999);
+    const companyFilter = userRole === 'admin'
+      ? {} 
+      : { companyId: new mongoose.Types.ObjectId(companyId) };
 
-    // Check if dates are valid
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Invalid date format" 
-      });
-    }
-
-    // Get Mongoose connection for raw operations
-    const db = mongoose.connection.db;
-
-    // Query purchase data with date range and company_id filter
-    const purchases = await db.collection("purchases")
+    const purchases = await Purchase
       .aggregate([
         {
           $match: {
-            company_id: session.user.company_id,
-            createdAt: { $gte: start, $lte: end }
+            ...companyFilter,
+            status: "done",
+            transactionType: "purchase"
           }
         },
         {
           $lookup: {
-            from: "products",
-            localField: "product_id",
+            from: "storelists",
+            localField: "fromStore",
             foreignField: "_id",
-            as: "product"
-          }
-        },
-        {
-          $lookup: {
-            from: "stores",
-            localField: "store_id",
-            foreignField: "_id",
-            as: "store"
+            as: "storeInfo"
           }
         },
         {
           $lookup: {
             from: "suppliers",
-            localField: "supplier_id",
+            localField: "supplier",
             foreignField: "_id",
-            as: "supplier"
+            as: "supplierInfo"
           }
         },
         {
-          $unwind: { path: "$product", preserveNullAndEmptyArrays: true }
+          $unwind: "$storeInfo"
         },
         {
-          $unwind: { path: "$store", preserveNullAndEmptyArrays: true }
+          $unwind: {
+            path: "$supplierInfo",
+            preserveNullAndEmptyArrays: true
+          }
         },
         {
-          $unwind: { path: "$supplier", preserveNullAndEmptyArrays: true }
+          $group: {
+            _id: {
+              date: {
+                $dateToString: { 
+                  format: "%Y-%m-%d", 
+                  date: "$date" 
+                }
+              },
+              storeId: "$fromStore",
+              storeName: "$storeInfo.name",
+              supplierId: "$supplier",
+              supplierName: { $ifNull: ["$supplierInfo.name", "Unknown Supplier"] }
+            },
+            storeDailyTotal: { $sum: "$totalPrice" },
+            totalQuantity: { $sum: "$quantity" }
+          }
+        },
+        {
+          $group: {
+            _id: "$_id.date",
+            totalPurchases: { $sum: "$storeDailyTotal" },
+            totalQuantity: { $sum: "$totalQuantity" },
+            details: {
+              $push: {
+                storeName: "$_id.storeName",
+                supplierName: "$_id.supplierName",
+                amount: { $round: ["$storeDailyTotal", 2] },
+                quantity: "$totalQuantity"
+              }
+            }
+          }
         },
         {
           $project: {
-            _id: 1,
-            quantity: 1,
-            total_price: 1,
-            unit_price: 1,
-            createdAt: 1,
-            productName: "$product.name",
-            storeName: "$store.name",
-            supplierName: "$supplier.name",
-            measurementUnit: "$product.measurment_name",
-            subMeasurementUnit: "$product.sub_measurment_name",
-            subMeasurementValue: "$product.sub_measurment_value"
+            _id: 0,
+            date: "$_id",
+            totalPurchases: { $round: ["$totalPurchases", 2] },
+            totalQuantity: 1,
+            details: 1
           }
         },
         {
-          $sort: { createdAt: -1 }
+          $sort: { date: -1 }
         }
-      ])
-      .toArray();
+      ]);
 
-    // Return success response with data
+    // Format the numbers with commas
+    const formattedPurchases = purchases.map(day => ({
+      date: day.date,
+      totalPurchases: day.totalPurchases.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }),
+      totalQuantity: day.totalQuantity,
+      details: day.details.map(detail => ({
+        storeName: detail.storeName,
+        supplierName: detail.supplierName,
+        amount: detail.amount.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }),
+        quantity: detail.quantity
+      }))
+    }));
+
     return res.status(200).json({
       success: true,
-      message: "Purchase data retrieved successfully",
-      data: purchases
+      message: "Daily purchase report retrieved successfully",
+      data: formattedPurchases
     });
 
   } catch (error) {
-    console.error("Error fetching purchase data:", error);
+    console.error("Error fetching purchase report:", error);
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch purchase data",
+      message: "Failed to fetch purchase report",
       error: error.message
     });
   }
 }
+
+export default protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance', 'user'])(handler);

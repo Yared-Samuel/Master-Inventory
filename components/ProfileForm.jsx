@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
@@ -140,6 +141,7 @@ const ProfileForm = ({ user: initialUser, onUpdate }) => {
   
   return (
     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+
       <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
         <h3 className="text-lg leading-6 font-medium text-gray-900">
           Profile Information

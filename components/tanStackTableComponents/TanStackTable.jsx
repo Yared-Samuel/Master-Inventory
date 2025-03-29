@@ -9,7 +9,7 @@ const TanStackTable = ({ table, filtering, loading, children, setFiltering }) =>
   return (
     <div className="w-full overflow-x-auto">
       <div className="flex flex-col md:flex-row justify-between bg-gray-50 p-2">
-        <h3 className="pl-2 text-blue-600 font-extrabold text-lg">{children}</h3>
+        <h3 className="pl-2 text-[#447db5] font-extrabold text-lg">{children}</h3>
         <div className="relative flex justify-end self-end w-full md:w-1/2 lg:w-1/3 xl:w-1/4 mt-2 md:mt-0">
           <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
             <svg
@@ -60,13 +60,22 @@ const TanStackTable = ({ table, filtering, loading, children, setFiltering }) =>
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="bg-white even:bg-gray-50 border-b">
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-2 md:px-4  text-gray-900">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
+              <React.Fragment key={row.id}>
+                <tr className="bg-white border-b hover:bg-gray-50">
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className="px-2 md:px-4 py-1">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+                {row.getIsExpanded() && (
+                  <tr>
+                    <td colSpan={row.getVisibleCells().length}>
+                      {table.options.renderSubComponent({ row })}
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>

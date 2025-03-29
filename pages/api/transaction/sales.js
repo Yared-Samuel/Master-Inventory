@@ -183,10 +183,11 @@ const newRemainingInSubUnits = currentInventoryInSubUnits - actualQuantityInSubU
 async function getSalesTransactions(req, res, Transaction, companyId, userRole) {
   try {
     // Apply company filter based on user role
+
     const companyFilter = userRole === 'admin'
       ? {} 
       : { companyId: companyId };
-
+    
     // Build query with appropriate company filtering
     const query = {
       transactionType: "sale",

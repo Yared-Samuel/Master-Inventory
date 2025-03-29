@@ -14,9 +14,10 @@ async function handler(req, res) {
     
     switch (method) {
       case "GET":
+        console.log("first")
         const companies = await Company.find().sort("-createdAt");
         return sendSuccess(res, "Companies retrieved successfully", companies);
-        
+        console.log(companies)
       case "POST":
         const { name, email, address, phone } = req.body;
         

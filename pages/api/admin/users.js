@@ -3,8 +3,8 @@
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
 import { sendSuccess, sendError, sendBadRequest, sendNotFound, sendUnauthorized } from "@/lib/utils/responseHandler";
 import bcrypt from "bcryptjs";
-
 import { getUserModel, getCompanyModel  } from "@/lib/models";
+import connect from "@/lib/db";
 const User = getUserModel()
 const Company = getCompanyModel()
 
@@ -94,9 +94,10 @@ async function createUser(data) {
   }
   
   // Create password hash
+  console.log(password)
   const salt = 10;
   const hashedPassword = await bcrypt.hash(password, salt);
-  
+  console.log(hashedPassword)
   // Create user
   const newUser = new User({
     name,

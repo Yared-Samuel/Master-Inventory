@@ -65,9 +65,6 @@ export default function Home() {
 
       <CompanyShow />
         
-        
-
-        
         {/* Footer */}
         <div className="bg-white shadow-md rounded-lg py-6  mt-8 max-w-full mx-auto relative">
         

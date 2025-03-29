@@ -26,7 +26,7 @@ const SalesForm = () => {
     const getProduct = async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/config/product/productPurchase");
+        const res = await fetch("/api/config/product/productForSales");
         if (!res.ok) {
           return toast.error("Something went wrong!");
         }
@@ -45,7 +45,7 @@ const SalesForm = () => {
     const getStore = async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/config/store/store");
+        const res = await fetch("/api/config/store/subStore");
         if (!res.ok) {
           return toast.error("Something went wrong!");
         }

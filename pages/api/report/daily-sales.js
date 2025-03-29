@@ -1,119 +1,127 @@
 import connect from "@/lib/db";
+import { protectRoute } from "@/lib/middleware/roleMiddleware";
+import { getInventoryModel } from "@/lib/models";
 import mongoose from "mongoose";
 
-export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method not allowed" });
+
+async function handler(req, res) {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized - User data not available'
+    });
   }
 
+  switch (req.method) {
+    case 'GET':
+      return await getSalesReport(req, res, req.user.companyId, req.user.role);
+    default:
+      return res.status(405).json({ 
+        success: false, 
+        message: 'Method not allowed' 
+      });
+  }
+}
+
+async function getSalesReport(req, res, companyId, userRole) {
   try {
- const userRole = req.user.role;
- const companyFilter = userRole === 'admin' ? {} : { companyId: companyId };
-
-
-    // Connect to database using Mongoose
     await connect();
-    
-    // Get date range from query params
-    const { startDate, endDate } = req.query;
-    
-    // Validate date inputs
-    if (!startDate || !endDate) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Start date and end date are required" 
-      });
-    }
+    const Sales = getInventoryModel("sales");
 
-    // Parse dates
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    // Set end date to end of day
-    end.setHours(23, 59, 59, 999);
+    const companyFilter = userRole === 'admin'
+      ? {} 
+      : { companyId: new mongoose.Types.ObjectId(companyId) };
 
-    // Check if dates are valid
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Invalid date format" 
-      });
-    }
-
-    // Get Mongoose connection for raw operations
-    const db = mongoose.connection.db;
-
-    // Modify the $match stage in the aggregation pipeline
-    const matchStage = {
-      ...companyFilter,
-      createdAt: { $gte: start, $lte: end }
-    };
-
-    // Add store_id filter if provided
-    if (req.query.storeId && req.query.storeId !== "all") {
-      matchStage.store_id = req.query.storeId;
-    }
-
-    // Query sales data with filters
-    const sales = await db.collection("sales")
+    const sales = await Sales
       .aggregate([
         {
-          $match: matchStage
-        },
-        {
-          $lookup: {
-            from: "products",
-            localField: "product_id",
-            foreignField: "_id",
-            as: "product"
+          $match: {
+            ...companyFilter,
+            status: "done",
+            transactionType: "sale"
           }
         },
         {
           $lookup: {
-            from: "stores",
-            localField: "store_id",
+            from: "storelists",
+            localField: "fromStore",
             foreignField: "_id",
-            as: "store"
+            as: "storeInfo"
           }
         },
         {
-          $unwind: { path: "$product", preserveNullAndEmptyArrays: true }
+          $unwind: "$storeInfo"
         },
         {
-          $unwind: { path: "$store", preserveNullAndEmptyArrays: true }
+          $group: {
+            _id: {
+              date: {
+                $dateToString: { 
+                  format: "%Y-%m-%d", 
+                  date: "$date" 
+                }
+              },
+              storeId: "$fromStore",
+              storeName: "$storeInfo.name"
+            },
+            storeDailyTotal: { $sum: "$totalPrice" }
+          }
+        },
+        {
+          $group: {
+            _id: "$_id.date",
+            totalSales: { $sum: "$storeDailyTotal" },
+            stores: {
+              $push: {
+                storeName: "$_id.storeName",
+                sales: { $round: ["$storeDailyTotal", 2] }
+              }
+            }
+          }
         },
         {
           $project: {
-            _id: 1,
-            quantity: 1,
-            total_price: 1,
-            unit_price: 1,
-            createdAt: 1,
-            productName: "$product.name",
-            storeName: "$store.name",
-            measurementUnit: "$product.measurment_name",
-            subMeasurementUnit: "$product.sub_measurment_name",
-            subMeasurementValue: "$product.sub_measurment_value"
+            _id: 0,
+            date: "$_id",
+            totalSales: { $round: ["$totalSales", 2] },
+            stores: 1
           }
         },
         {
-          $sort: { createdAt: -1 }
+          $sort: { date: -1 }
         }
-      ])
-      .toArray();
+      ]);
 
-    // Return success response with data
+    // Format the numbers with commas
+    const formattedSales = sales.map(day => ({
+      date: day.date,
+      totalSales: day.totalSales.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }),
+      stores: day.stores.map(store => ({
+        storeName: store.storeName,
+        sales: store.sales.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })
+      }))
+    }));
+
     return res.status(200).json({
       success: true,
-      message: "Sales data retrieved successfully",
-      data: sales
+      message: "Daily sales report retrieved successfully",
+      data: formattedSales
     });
 
   } catch (error) {
-    console.error("Error fetching sales data:", error);
+    console.error("Error fetching sales report:", error);
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch sales data",
+      message: "Failed to fetch sales report",
       error: error.message
     });
   }
 }
+
+export default protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance', 'user'])(handler);

@@ -78,13 +78,17 @@ const Login = () => {
     <div>
     {isLoading ? (<LoadingComponent />) : (
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-gray-200">
-          Sign in to your account
-        </h2>
+      <div className="mx-auto sm:mx-auto sm:w-full sm:max-w-sm">
+      <div className="flex justify-center items-center gap-2   border-b-2 border-t-2 border-gray-300 ">
+            <div className=" w-12 h-12 flex items-center justify-center">
+              <Image src="/Logo.png" alt="Logo" width={200} height={200} />
+            </div>
+            <span className="text-2xl font-extrabold text-primary-700">MELA  </span>
+            <span className="text-sm font-normal text-secondary-400">Inventory Management</span>
+          </div>
       </div>
-
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+            <h2 className="text-2xl font-bold text-center text-secondary-700 mt-4">Login</h2>
+      <div className="mt-3 sm:mx-auto sm:w-full sm:max-w-sm">
         <form onSubmit={handleLogin} className="space-y-6 " >
           <div>
             <label
