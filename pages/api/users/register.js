@@ -1,7 +1,7 @@
 import { generateToken } from "@/actions/jwt";
 import connect from "@/lib/db";
 import { getUserModel, getCompanyModel, getTokenModel } from "@/lib/models";
-import { sendSuccess, sendError, sendBadRequest, sendConflict } from "@/lib/utils/responseHandler";
+import { sendSuccess, sendError, sendBadRequest } from "@/lib/utils/responseHandler";
 import { serialize } from "cookie";
 import mongoose from "mongoose";
 
@@ -40,7 +40,7 @@ export default async function Register(req, res) {
     if (existingEmail) {
       await session.abortTransaction();
       session.endSession();
-      return sendConflict(res, "Email already exists!");
+      return sendBadRequest(res, "Email already exists!");
     }
 
     let userCompanyId = companyId;
