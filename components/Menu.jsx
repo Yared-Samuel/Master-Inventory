@@ -1,3 +1,5 @@
+"use client";
+
 const menuItems = [
   {
     title: "MENU",
@@ -71,7 +73,7 @@ const menuItems = [
             visible: ["admin", "company_admin"],
           },
           {
-            icon: "/menu-icon/sales.svg",
+            icon: "/menu-icon/purchase.svg",
             label: "Purchase",
             href: "/report/daily-purchase",
             visible: ["admin", "company_admin"],
@@ -116,13 +118,13 @@ const menuItems = [
         visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
         subItems: [
       {
-        icon: "/profile.png",
+        icon: "/menu-icon/profile.svg",
         label: "Profile",
         href: "/profile",
             visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
       },
       {
-        icon: "/logout.png",
+        icon: "/menu-icon/logout.svg",
         label: "Logout",
             href: "#",
             visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
@@ -160,9 +162,8 @@ const menuItems = [
 ];
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useSession } from 'next-auth/react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import AuthContext from '@/pages/context/AuthProvider';
@@ -172,6 +173,11 @@ const Menu = ({ isExpanded }) => {
   const router = useRouter();
   const { auth } = useContext(AuthContext);
   const userRole = auth.role;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleExpand = (label) => {
     setExpandedItems(prev => ({
@@ -188,6 +194,10 @@ const Menu = ({ isExpanded }) => {
     if (!userRole) return false;
     return allowedRoles.includes(userRole);
   };
+
+  if (!mounted) {
+    return <div className="mt-4"></div>;
+  }
 
   return (
     <div className='mt-4 text-sm'>
@@ -214,7 +224,7 @@ const Menu = ({ isExpanded }) => {
                         onClick={() => toggleExpand(item.label)}
                         className={`w-full flex items-center ${isExpanded ? 'justify-between' : 'justify-center'} 
                           text-gray-500 py-1 px-2 rounded-md hover:bg-lamaSkyLight 
-                          ${expandedItems[item.label] ? 'bg-lamaSkyLight' : ''}`}
+                          ${expandedItems[item.label] ? 'bg-primary-50' : ''}`}
                       >
                         <div className='flex items-center gap-1'>
                           <Image src={item.icon} alt='' width={20} height={20} color='#135392'/>
@@ -261,8 +271,8 @@ const Menu = ({ isExpanded }) => {
                     href={item.href}
                     key={item.label}
                     className={`flex items-center ${isExpanded ? 'justify-start' : 'justify-center'} 
-                      gap-1 text-[#114a82] font-semibold text-[16px] py-1 px-2 rounded-md hover:bg-lamaSkyLight 
-                      tracking-wide ${isActive(item.href) ? 'bg-lamaSkyLight text-blue-600' : ''}`}
+                      gap-1 text-[#114a82] font-semibold text-[16px] py-1 px-2 rounded-md hover:bg-primary-50 
+                      tracking-wide ${isActive(item.href) ? 'bg-primary-50 text-blue-600' : ''}`}
                   >
                     <Image src={item.icon} alt='' width={25} height={25} />
                     <span className={`transition-all duration-300 
