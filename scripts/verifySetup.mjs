@@ -7,13 +7,13 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import chalk from 'chalk'; // Optional, for colored output
 
+// Fix for __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 // Setup env
 dotenv.config({ path: resolve(__dirname, '..', '.env') });
 
-// Get the current script's directory
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const rootDir = resolve(__dirname, '..');
 
 // Set colors for output
 const success = (msg) => console.log(chalk?.green(msg) || `✅ ${msg}`);
@@ -171,7 +171,7 @@ async function verifySetup() {
       if (users.length > 0) {
         success(`Found ${users.length} users with role '${role}'`);
       } else {
-        warn(`No users found with role '${role}'`);
+        warning(`No users found with role '${role}'`);
       }
     }
 
