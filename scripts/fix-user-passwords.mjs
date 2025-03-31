@@ -1,3 +1,8 @@
+// MONGO_URI =  mongodb://localhost:27017/inventory-app
+// JWT_SECRET = YARED123
+// ENV = production
+
+
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
