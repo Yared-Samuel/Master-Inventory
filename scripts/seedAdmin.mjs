@@ -28,7 +28,7 @@ const info = (msg) => console.log(styles.info, `ℹ ${msg}`);
 const warn = (msg) => console.log(styles.warn, `⚠ ${msg}`);
 
 // MongoDB connection string - use MONGO_URI instead of MONGODB_URI
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = process.env.NODE_ENV === "development" ? process.env.MONGO_URI : "mongodb+srv://birukcode@admin:Maleda123@cluster0.diflt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 if (!MONGO_URI) {
   error('MONGO_URI is not defined in environment variables');
