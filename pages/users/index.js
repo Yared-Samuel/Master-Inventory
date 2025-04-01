@@ -17,7 +17,7 @@ const UsersList = () => {
             "Content-Type": "application/json",
           },
         });
-        console.log(response);
+        
         if (!response.ok) {
           // Handle HTTP errors (e.g., 404, 500)
           const errorData = await response.json();
