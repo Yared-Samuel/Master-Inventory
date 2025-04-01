@@ -1,6 +1,6 @@
 import { usePathname } from "next/navigation";
 
-export function getCurrentPathName() {
+export function GetCurrentPathName() {
     const pathNameRaw = usePathname();
     const pathName = pathNameRaw.replace("/", "")
     return pathName;

@@ -1,7 +1,5 @@
 import React, { useState } from 'react'
 import Menu from './Menu'
-import Navbar from './Navbar'
-import Link from 'next/link'
 import Image from 'next/image'
 import MenuIcon from '@mui/icons-material/Menu'
 import CloseIcon from '@mui/icons-material/Close'

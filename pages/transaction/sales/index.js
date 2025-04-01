@@ -1,4 +1,4 @@
-import { getCurrentPathName } from "@/actions";
+import { GetCurrentPathName } from "@/actions";
 import SalesForm from "@/components/formComponents/SalesForm";
 import Layout from "@/components/Layout";
 import TableSales from "@/components/TableComponents/TableSales";
@@ -8,7 +8,7 @@ import React from "react";
 
 const Sales = () => {
   useRedirectLoggedOutUser();
-  const pathName = getCurrentPathName();
+  const pathName = GetCurrentPathName();
   return (
     <div className="px-4">
       <TitleComponent pathName={pathName}>Sales</TitleComponent>

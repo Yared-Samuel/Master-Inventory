@@ -1,4 +1,4 @@
-import { getCurrentPathName } from '@/actions'
+import { GetCurrentPathName } from '@/actions'
 import StoreForm from '@/components/formComponents/StoreForm'
 import Layout from '@/components/Layout'
 import TableStoreList from '@/components/TableComponents/TableStoreList'
@@ -8,7 +8,7 @@ import React from 'react'
 
 const StorePage = () => {
     useRedirectLoggedOutUser()
-    const pathName = getCurrentPathName()
+    const pathName = GetCurrentPathName()
   return (
     <div className='px-4'>
         <TitleComponent pathName={pathName}>Stores</TitleComponent>

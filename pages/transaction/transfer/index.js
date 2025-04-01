@@ -1,4 +1,4 @@
-import { getCurrentPathName } from '@/actions';
+import { GetCurrentPathName } from '@/actions';
 import TransferForm from '@/components/formComponents/TransferForm';
 import Layout from '@/components/Layout';
 import TableTransfer from '@/components/TableComponents/TableTransfer';
@@ -8,7 +8,7 @@ import React from 'react'
 
 const Transfer = () => {
   useRedirectLoggedOutUser()
-    const pathName = getCurrentPathName();
+    const pathName = GetCurrentPathName();
   return (
     <div className='px-4'>
         <TitleComponent pathName={pathName}>Transfer</TitleComponent>

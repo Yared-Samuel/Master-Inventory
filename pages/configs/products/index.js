@@ -1,4 +1,4 @@
-import { getCurrentPathName } from "@/actions";
+import { GetCurrentPathName } from "@/actions";
 import Layout from "@/components/Layout";
 import TitleComponent from "@/components/TitleComponent";
 import useRedirectLoggedOutUser from "@/lib/redirect";
@@ -7,7 +7,7 @@ import TableProductList from "@/components/TableComponents/TableProductList";
 
 const ProductListPage = () => {
   useRedirectLoggedOutUser();
-  const pathName = getCurrentPathName();
+  const pathName = GetCurrentPathName();
 
   return (
     

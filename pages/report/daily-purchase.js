@@ -1,4 +1,4 @@
-import { getCurrentPathName } from '@/actions';
+import { GetCurrentPathName } from '@/actions';
 import Layout from '@/components/Layout';
 import DailyPurchaseReport from '@/components/reportDisplay/DailyPurchaseReport';
 import TitleComponent from '@/components/TitleComponent';
@@ -6,7 +6,7 @@ import useRedirectLoggedOutUser from '@/lib/redirect'
 
 const DailyPurchase = () => {
     useRedirectLoggedOutUser();
-    const pathName = getCurrentPathName();
+    const pathName = GetCurrentPathName();
   return (
     <div className='px-4'>
         <TitleComponent pathName={pathName}>Daily Purchase</TitleComponent>

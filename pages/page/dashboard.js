@@ -122,7 +122,7 @@ const Dashboard = () => {
           <div className="flex justify-between items-center mb-4">
             <div>
               <h3 className="text-lg font-semibold text-gray-800">Statistics</h3>
-              <p className="text-sm text-gray-600">Target you've set for each month</p>
+              <p className="text-sm text-gray-600">Target you have set for each month</p>
             </div>
             <div className="flex gap-4">
               <button className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md">Monthly</button>
@@ -152,7 +152,7 @@ const Dashboard = () => {
           <div className="flex justify-between items-center mb-4">
             <div>
               <h3 className="text-lg font-semibold text-gray-800">Estimated Revenue</h3>
-              <p className="text-sm text-gray-600">Target you've set for each month</p>
+              <p className="text-sm text-gray-600">Target you have set for each month</p>
             </div>
             <button className="text-gray-400">•••</button>
           </div>

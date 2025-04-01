@@ -1,4 +1,4 @@
-import { getCurrentPathName } from '@/actions';
+import { GetCurrentPathName } from '@/actions';
 
 import PriceForm from '@/components/formComponents/PriceForm';
 import Layout from '@/components/Layout';
@@ -9,7 +9,7 @@ import React from 'react'
 
 const Sprice = () => {
     useRedirectLoggedOutUser()
-    const pathName = getCurrentPathName()
+    const pathName = GetCurrentPathName()
 
   return (
     <div className='px-4'>

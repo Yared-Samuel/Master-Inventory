@@ -1,9 +1,12 @@
-
 import Layout from "@/components/Layout";
 import { useState, useEffect } from "react";
-const usersList = async () => {
+import { useRouter } from 'next/router';
+
+const UsersList = () => {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -24,10 +27,16 @@ const usersList = async () => {
         }
 
         const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to fetch users');
+        }
+        
         setUsers(data.data);
-      } catch (error) {
-        console.error("Fetch error:", error.message);
-        setError(error);
+      } catch (err) {
+        console.error("Fetch error:", err.message);
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -64,4 +73,4 @@ usersList.getLayout = function getLayout(page) {
   return <Layout>{page}</Layout>;
 };
 
-export default usersList;
+export default UsersList;

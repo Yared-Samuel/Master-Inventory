@@ -1,4 +1,4 @@
-import { getCurrentPathName } from '@/actions';
+import { GetCurrentPathName } from '@/actions';
 import PurchaseForm from '@/components/formComponents/PurchaseForm';
 import Layout from '@/components/Layout';
 import TablePurchase from '@/components/TableComponents/TablePurchase';
@@ -8,7 +8,7 @@ import React from 'react'
 
 const Purchase = () => {
     useRedirectLoggedOutUser()
-    const pathName = getCurrentPathName();
+    const pathName = GetCurrentPathName();
     
   return (
     <div className='px-4'>

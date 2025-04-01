@@ -25,7 +25,6 @@ export const AuthProvider = ({ children }) => {
 
     // Custom setAuth function that persists to localStorage
     const setAuth = (newAuthData) => {
-        console.log("Setting auth state to:", newAuthData);
         
         // Update state
         setAuthState(newAuthData);
@@ -38,7 +37,6 @@ export const AuthProvider = ({ children }) => {
 
     // Debug current auth state when it changes
     useEffect(() => {
-        console.log("Auth state updated:", auth);
     }, [auth]);
 
     return (

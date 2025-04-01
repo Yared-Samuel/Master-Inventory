@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, { useEffect, useState,  useContext } from "react";
 import AuthContext from "@/pages/context/AuthProvider";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
