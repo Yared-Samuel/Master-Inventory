@@ -69,7 +69,7 @@ const UsersList = () => {
   );
 };
 
-usersList.getLayout = function getLayout(page) {
+UsersList.getLayout = function getLayout(page) {
   return <Layout>{page}</Layout>;
 };
 
