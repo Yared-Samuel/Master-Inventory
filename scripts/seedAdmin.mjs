@@ -1,17 +1,20 @@
+#!/usr/bin/env node
+
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
+import { dirname, join, resolve } from 'path';
 import fs from 'fs';
+import chalk from 'chalk';
 
-// Get the directory name properly in ESM
+// Fix: Define __dirname FIRST before using it
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = resolve(__dirname, '..');
 
-// Load environment variables
-dotenv.config({ path: resolve(rootDir, '.env') });
+// Now use __dirname after it's defined
+dotenv.config({ path: resolve(__dirname, '..', '.env') });
 
 // Set up console styling
 const styles = {
@@ -28,7 +31,7 @@ const info = (msg) => console.log(styles.info, `ℹ ${msg}`);
 const warn = (msg) => console.log(styles.warn, `⚠ ${msg}`);
 
 // MongoDB connection string - use MONGO_URI instead of MONGODB_URI
-const MONGO_URI = process.env.NODE_ENV === "development" ? process.env.MONGO_URI : "mongodb+srv://birukcode@admin:Maleda123@cluster0.diflt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const MONGO_URI = process.env.MONGO_URI
 
 if (!MONGO_URI) {
   error('MONGO_URI is not defined in environment variables');
