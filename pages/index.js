@@ -14,7 +14,7 @@ export default function Home() {
         </div> */}
       <Head>
         <title>MELA - Introducing Most Technology</title>
-        <link rel="icon" href="/Logo.png" />
+        <link rel="icon" href="/Logo.svg" />
       </Head>
       
       {/* Main Card Container */}
@@ -26,7 +26,7 @@ export default function Home() {
           {/* Logo */}
           <div className="flex items-center gap-2   border-b-2 border-t-2 border-gray-300 ">
             <div className=" w-12 h-12 flex items-center justify-center">
-              <Image src="/Logo.png" alt="Logo" width={200} height={200} />
+              <Image src="/Logo.svg" alt="Logo" width={200} height={200} />
             </div>
             <span className="text-2xl font-extrabold text-[#1066A8]">MELA</span>
           </div>

@@ -38,6 +38,7 @@ const TablePriceList = () => {
   const columnHelper = createColumnHelper();
   const { auth } = useContext(AuthContext);
 
+  
   // Fetch data
 
   
@@ -62,7 +63,6 @@ const TablePriceList = () => {
         }
         
         const data = await res.json();
-        console.log("Price data fetched successfully:", data);
         
         if (!data.success) {
           console.error("API returned success: false", data);
@@ -76,7 +76,6 @@ const TablePriceList = () => {
           return;
         }
         
-        console.log(`Loaded ${data.data.length} price entries`);
         setData(data.data);
         setPriceData(data.data);
         
@@ -163,13 +162,14 @@ const TablePriceList = () => {
           {
             header: "Actions",
             cell: ({ row }) => (
-              <div className="">
+              <div className="flex gap-2">
                 <Link
                   href={`/configs/products`}
                   onClick={(e) => {
                     e.preventDefault();
                     setUpdateId(row.original._id);
                   }}
+                  className="group relative"
                 >
                   <Image
                     src={"/icons/edit-icon.svg"}
@@ -177,7 +177,46 @@ const TablePriceList = () => {
                     width={20}
                     height={20}
                   />
+                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                    Edit
+                  </span>
                 </Link>
+                <button
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to duplicate this price list?')) {
+                      fetch(`/api/config/price/duplicate/${row.original._id}`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          companyId: auth.companyId,
+                          userId: auth.id,
+                        }),
+                      })
+                      .then(res => res.json())
+                      .then(data => {
+                        if (data.success) {
+                          router.reload();
+                          toast.success('Price list duplicated successfully');
+                          
+                        } else {
+                          toast.error(data.message || 'Failed to duplicate price list');
+                        }
+                      })
+                      .catch(err => {
+                        console.error('Error duplicating price list:', err);
+                        toast.error('Error duplicating price list');
+                      });
+                    }
+                  }}
+                  className="group relative"
+                >
+                  <Image src={'/icons/copy.svg'} alt="copy" width={20} height={20} />
+                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                    Copy
+                  </span>
+                </button>
               </div>
             ),
           },
@@ -207,7 +246,6 @@ const TablePriceList = () => {
   useEffect(() => {
     const getProduct = async () => {
       try {
-        console.log("Fetching products for price list...");
         const res = await fetch("/api/config/product/product");
         
         if (!res.ok) {
@@ -224,7 +262,6 @@ const TablePriceList = () => {
         }
         
         const data = await res.json();
-        console.log("Products data fetched successfully:", data);
         
         if (!data.success) {
           console.error("API returned success: false", data);
@@ -238,7 +275,6 @@ const TablePriceList = () => {
           return;
         }
         
-        console.log(`Loaded ${data.data.length} products for price list`);
         setProductData(data.data);
       } catch (error) {
         console.error("Error fetching product data:", error);

@@ -31,24 +31,24 @@ const menuItems = [
         visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
       },
       {
-        icon: "/menu-icon/config.svg",
+        icon: "/menu-icon/setting.svg",
         label: "Configs",
         visible: ["admin", "company_admin"],
         subItems: [
           {
-            icon: "/teacher.png",
+            icon: "/menu-icon/config.svg",
             label: "Products",
             href: "/configs/products",
             visible: ["admin", "company_admin"],
           },
           {
-            icon: "/teacher.png",
+            icon: "/menu-icon/store-config.svg",
             label: "Stores",
             href: "/configs/stores",
             visible: ["admin", "company_admin"],
           },
           {
-            icon: "/student.png",
+            icon: "/menu-icon/price-config.svg",
             label: "Price",
             href: "/configs/prices",
             visible: ["admin", "company_admin"],

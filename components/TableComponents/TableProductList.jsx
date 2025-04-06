@@ -99,6 +99,7 @@ const TableProductList = () => {
                     e.preventDefault();
                     setUpdateId(row.original._id);
                   }}
+                  className="group relative"
                 >
                   <Image
                     src={"/icons/edit-icon.svg"}
@@ -106,6 +107,9 @@ const TableProductList = () => {
                     width={20}
                     height={20}
                   />
+                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                    Edit
+                  </span>
                 </Link>
               </div>
             ),

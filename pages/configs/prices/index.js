@@ -8,6 +8,7 @@ import useRedirectLoggedOutUser from '@/lib/redirect';
 import React from 'react'
 
 const Sprice = () => {
+  
     useRedirectLoggedOutUser()
     const pathName = GetCurrentPathName()
 

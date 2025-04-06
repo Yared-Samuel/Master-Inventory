@@ -10,7 +10,6 @@ async function handler(req, res) {
     const Product = getProductModel();
     
     const { method } = req;
-    console.log(`Processing ${method} request for price API`);
 
   switch (method) {
     case "POST": {
