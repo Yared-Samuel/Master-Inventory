@@ -8,15 +8,10 @@ import CompanyShow from "@/components/mainPage/CompanyShow";
 export default function Home() {
   return (
     <div className="relative flex items-center justify-center bg-gradient-to-b from-purple-300 to-purple-400">
-      {/* <div className=" absolute top-50 left-50 w-full h-full">
-        <Image className=" " src="/main-page/wave.svg" alt="wave" width={20000} height={20000} />
-        <Image className=" " src="/main-page/waveInv.svg" alt="wave" width={20000} height={20000} />
-        </div> */}
       <Head>
         <title>MELA - Introducing Most Technology</title>
         <link rel="icon" href="/Logo.svg" />
-      </Head>
-      
+      </Head>      
       {/* Main Card Container */}
       <div className="w-full h-full bg-white  shadow-2xl overflow-hidden relative">
         
@@ -28,7 +23,7 @@ export default function Home() {
             <div className=" w-12 h-12 flex items-center justify-center">
               <Image src="/Logo.svg" alt="Logo" width={200} height={200} />
             </div>
-            <span className="text-2xl font-extrabold text-[#1066A8]">MELA</span>
+            <span className="text-2xl font-extrabold text-[#1066A8]">MALEDA TECH </span>
           </div>
           
           {/* Navigation */}
@@ -41,7 +36,7 @@ export default function Home() {
         {/* Main Content Area */}
         <div className="flex flex-col md:flex-row z-50">
           {/* Left Column - Text & Form */}
-          <div className="w-full md:w-1/2 p-6 md:p-10">
+          <div className="w-full md:w-1/2 px-6 md:p-10">
             {/* Headings */}
             <h1 className="text-5xl md:text-6xl font-black tracking-tight my-6">
               ULTIMATE<br />
@@ -55,17 +50,6 @@ export default function Home() {
             <p className="text-gray-600 mb-8 max-w-md font-semibold z-100">
             Seamless digital experiences to <span className="text-[#1066A8] font-bold">boost</span> efficiency, engagement, and growth your <span className="text-[#1066A8] font-bold">Business</span>.
             </p>
-
-            <div className="md:flex items-center gap-2   border-b-2 border-t-2 border-gray-300 hidden ">
-            <div className=" w-60 h-60 flex items-center justify-center">
-              <Image src="/Logo.svg" alt="Logo" width={600} height={600} />
-            </div>
-            <span className="text-4xl font-extrabold text-[#1066A8]">MALEDA TECH SOLUTIONS</span>
-            <div className=" w-60 h-60 flex items-center justify-center">
-              <Image src="/Logo.svg" alt="Logo" width={600} height={600} />
-            </div>
-          </div>
-            
             </div>
 
 
@@ -73,8 +57,8 @@ export default function Home() {
 
             <Gallery />          
         </div>
-
       <CompanyShow />
+
         
         {/* Footer */}
         <div className="bg-white shadow-md rounded-lg py-6  mt-8 max-w-full mx-auto relative">

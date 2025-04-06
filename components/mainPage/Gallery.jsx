@@ -4,9 +4,9 @@ import styles from './Gallery.module.css'
 
 const Gallery = () => {
   return (
-    <div >
+    <div>
       <Image 
-        className='absolute top-0 right-0 z-0 opacity-10'
+        className='absolute top-0 right-0 z-0 opacity-20 md:opacity-10'
         src="/main-page/hero-image.svg" 
         alt="hero-image" 
         width={600} 
