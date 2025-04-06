@@ -32,9 +32,9 @@ export default function Home() {
           </div>
           
           {/* Navigation */}
-          <nav className="hidden md:flex space-x-8 text-sm">
-            <Link href="#" className="text-blue-500 font-medium">HOME</Link>
-            <Link href="/login" className="text-gray-500 hover:text-blue-500 transition-colors">Login here</Link>
+          <nav className="hidden md:flex space-x-8 text-lg">
+            <Link href="#" className="text-blue-500 font-bold">About Us</Link>
+            {/* <Link href="/login" className="text-gray-500 hover:text-blue-500 transition-colors">Login here</Link> */}
         </nav>
         </header>
         
@@ -52,9 +52,20 @@ export default function Home() {
             
       
             
-            <p className="text-gray-600 mb-8 max-w-md font-semibold">
+            <p className="text-gray-600 mb-8 max-w-md font-semibold z-100">
             Seamless digital experiences to <span className="text-[#1066A8] font-bold">boost</span> efficiency, engagement, and growth your <span className="text-[#1066A8] font-bold">Business</span>.
             </p>
+
+            <div className="md:flex items-center gap-2   border-b-2 border-t-2 border-gray-300 hidden ">
+            <div className=" w-60 h-60 flex items-center justify-center">
+              <Image src="/Logo.svg" alt="Logo" width={600} height={600} />
+            </div>
+            <span className="text-4xl font-extrabold text-[#1066A8]">MALEDA TECH SOLUTIONS</span>
+            <div className=" w-60 h-60 flex items-center justify-center">
+              <Image src="/Logo.svg" alt="Logo" width={600} height={600} />
+            </div>
+          </div>
+            
             </div>
 
 

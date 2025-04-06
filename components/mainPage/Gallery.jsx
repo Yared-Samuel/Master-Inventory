@@ -4,59 +4,25 @@ import styles from './Gallery.module.css'
 
 const Gallery = () => {
   return (
-    <div className={styles.body}>
-      <div className={styles.gallery}>
-        <Image 
-          className={styles.galleryImage1}
-          src="/main-page/phone-fancy.jpg" 
-          alt="a house on a mountain" 
-          width={200} 
-          height={200} 
-        />
-        <Image 
-          className={styles.galleryImage2}
-          src="/main-page/phone-fancy.jpg" 
-          alt="some pink flowers" 
-          width={200} 
-          height={200}           
-        />
-        <Image 
-          className={styles.galleryImage3}
-          src="/main-page/phone-fancy.jpg" 
-          alt="big rocks with some trees" 
-          width={200} 
-          height={200} 
-        />
-        <Image 
-          className={styles.galleryImage4}
-          src="/main-page/phone-fancy.jpg" 
-          alt="a waterfall, a lot of trees and great view from the sky" 
-          width={200} 
-          height={200} 
-        />
-        <Image 
-          className={styles.galleryImage5}
-          src="/main-page/phone-fancy.jpg" 
-          alt="a cool landscape" 
-          width={200} 
-          height={200} 
-        />
-        <Image 
-          className={styles.galleryImage6}
-          src="/main-page/phone-fancy.jpg" 
-          alt="inside a town between two buildings" 
-          width={200} 
-          height={200} 
-        />
-        <Image 
-          className={styles.galleryImage7}
-          src="/main-page/phone-fancy.jpg" 
-          alt="a great view of the sea above mountain" 
-          width={200} 
-          height={200} 
-        />
-      </div>
+    <div >
+      <Image 
+        className='absolute top-0 right-0 z-0 opacity-10'
+        src="/main-page/hero-image.svg" 
+        alt="hero-image" 
+        width={600} 
+        height={600} 
+      />
+      <Image 
+        // className='absolute top-0 left-0 z-20'
+        src="/main-page/hero-image1.svg" 
+        alt="hero-image" 
+        width={600} 
+        height={600} 
+        className='relative -top-40 -left-20'
+      
+      />
     </div>
+
   )
 }
 
