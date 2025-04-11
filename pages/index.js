@@ -21,7 +21,7 @@ export default function Home() {
           {/* Logo */}
           <div className="flex items-center gap-2   border-b-2 border-t-2 border-gray-300 ">
             <div className=" w-12 h-12 flex items-center justify-center">
-              <Image src="/Logo.svg" alt="Logo" width={200} height={200} />
+              <Image src="/logo.svg" alt="Logo" width={200} height={200} />
             </div>
             <span className="text-2xl font-extrabold text-[#1066A8]">MALEDA TECH </span>
           </div>

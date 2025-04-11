@@ -42,7 +42,7 @@ const Layout = ({children}) => {
             
             className="flex border-b-2 border-t-2 border-gray-300"
           >
-            <Image src={"logo.svg"} alt="logo" width={30} height={30} className='rounded-full' />
+            <Image src={"/logo.svg"} alt="logo" width={30} height={30} className='rounded-full' />
             <span className={`text-xl font-bold text-[#1066A8] transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
             <span className={`${isSidebarOpen ? '' : 'hidden'}`}>MELA</span>
             </span>
