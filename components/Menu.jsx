@@ -25,6 +25,12 @@ const menuItems = [
         visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
       },
       {
+        icon: "/menu-icon/use.svg",
+        label: "Use",
+        href: "/transaction/use",
+        visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
+      },
+      {
         icon: "/menu-icon/transfer.svg",
         label: "Transfer",
         href: "/transaction/transfer",

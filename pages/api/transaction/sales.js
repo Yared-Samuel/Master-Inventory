@@ -403,5 +403,5 @@ export default protectRoute([
   "storeMan",
   "barMan",
   "finance",
-  "user",
+  
 ])(handler);
