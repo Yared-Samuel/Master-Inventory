@@ -33,6 +33,20 @@ module.exports = {
           900: '#155CA2',
         },
       },
+      animation: {
+        'fadeIn': 'fadeIn 0.5s ease-in-out',
+        'popIn': 'popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        popIn: {
+          '0%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
+      },
     },
   },
   plugins: [],

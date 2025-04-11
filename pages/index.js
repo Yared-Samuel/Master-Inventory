@@ -10,7 +10,7 @@ export default function Home() {
     <div className="relative flex items-center justify-center bg-gradient-to-b from-purple-300 to-purple-400">
       <Head>
         <title>MELA - Introducing Most Technology</title>
-        <link rel="icon" href="/Logo.svg" />
+        <link rel="icon" href="/logo.svg" />
       </Head>      
       {/* Main Card Container */}
       <div className="w-full h-full bg-white  shadow-2xl overflow-hidden relative">

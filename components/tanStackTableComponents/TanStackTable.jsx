@@ -41,14 +41,14 @@ const TanStackTable = ({ table, filtering, loading, children, setFiltering }) =>
       {loading ? (
         <LoadingComponent />
       ) : (
-        <table className="w-full text-sm text-left text-gray-500">
+        <table className="w-full text-left text-gray-500">
           <thead className="text-xs text-gray-700 uppercase bg-gray-100">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="px-2 md:px-4 py-1 border-b-4 border-t-4 font-bold cursor-pointer"
+                    className="px-1 text-xs md:text-sm md:px-4 py-1 border-b-4 border-t-4 font-bold cursor-pointer"
                     onClick={header.column.getToggleSortingHandler()}
                   >
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
@@ -63,7 +63,7 @@ const TanStackTable = ({ table, filtering, loading, children, setFiltering }) =>
               <React.Fragment key={row.id}>
                 <tr className="bg-white border-b hover:bg-gray-50">
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-2 md:px-4 py-1">
+                    <td key={cell.id} className="px-0.5 text-xs md:text-sm md:px-4 py-1">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}

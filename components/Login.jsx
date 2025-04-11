@@ -81,7 +81,7 @@ const Login = () => {
       <div className="mx-auto sm:mx-auto sm:w-full sm:max-w-sm">
       <div className="flex justify-center items-center gap-2   border-b-2 border-t-2 border-gray-300 ">
             <div className=" w-12 h-12 flex items-center justify-center">
-              <Image src="/Logo.png" alt="Logo" width={200} height={200} />
+              <Image src="/logo.svg" alt="Logo" width={200} height={200} />
             </div>
             <span className="text-2xl font-extrabold text-primary-700">MALEDA  </span>
             <span className="text-sm font-normal text-secondary-400">Inventory Management</span>
