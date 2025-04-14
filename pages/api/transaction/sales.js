@@ -7,18 +7,14 @@ import {
   sendBadRequest,
 } from "@/lib/utils/responseHandler";
 import {
-  checkInventoryAvailability,
-  getSellingPrice,
-  isValidQuantity,
+  
+  checkInventoryAvailabilityForSale,
   isValidObjectId,
   convertSubUnitsToWholeUnits,
-  convertDecimalToWholeUnitsAndRemainder,
-  formatRemainingInventory,
-  calculateInventoryChangeInSubUnits,
-  encodeQuantityForStorage,
   decodeQuantityFromStorage,
-  calculateInventoryOperation,
 } from "@/lib/inventory/inventoryUtils";
+import mongoose from "mongoose";
+import { toast } from "react-toastify";
 
 async function handler(req, res) {
   try {
@@ -50,51 +46,67 @@ async function handler(req, res) {
 }
 
 async function handleSalesTransaction(body, userId, companyId, userRole, res, Transaction, Product) {
-  const {
-    productId,
-    quantity,
-    measurementType,
-    fromStore,
-    date,
-  } = body;
+  // Start a MongoDB session for transaction atomicity
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const {
+      productId,
+      quantity,
+      measurementType,
+      fromStore,
+      used_products,
+      date,
+    } = body;
+
+    console.log(used_products)
+    
+    // Validate input
+    if (!isValidObjectId(productId) || !isValidObjectId(fromStore)) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product or store ID",
+      });
+    }
 
 
-  // Validate input
-  if (!isValidObjectId(productId) || !isValidObjectId(fromStore)) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid product or store ID",
-    });
-  }
 
+    // Apply company filter based on user role
+    const companyFilter = userRole === 'admin' ? {} : { companyId: companyId };
 
+    // Get product details with appropriate company filtering
+    const product = await Product.findOne({
+      _id: productId,
+      companyId: companyId
+    }).session(session);
 
-  // Apply company filter based on user role
-  const companyFilter = userRole === 'admin' ? {} : { companyId: companyId };
+    if (!product) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
+    }
 
-  // Get product details with appropriate company filtering
-  const product = await Product.findOne({
-    _id: productId,
-    ...companyFilter
-  });
-  
-  if (!product) {
-    return sendBadRequest(res, "Product not found or access denied");
-  }
+    // Validate measurement type
+    if (
+      measurementType === "sub" &&
+      (!product.sub_measurment_name || !product.sub_measurment_value)
+    ) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({
+        success: false,
+        message: "This product does not have sub-measurement units defined",
+      });
+    }
 
-  // Validate measurement type
-  if (
-    measurementType === "sub" &&
-    (!product.sub_measurment_name || !product.sub_measurment_value)
-  ) {
-    return res.status(400).json({
-      success: false,
-      message: "This product does not have sub-measurement units defined",
-    });
-  }
-
-  // Check if product has sub-measurement units defined
-  const subUnitsPerMainUnit = product.sub_measurment_value || 1;
+    // Check if product has sub-measurement units defined
+    const subUnitsPerMainUnit = product.sub_measurment_value || 1;
 
     // Calculate actual quantity in sub-units
     let actualQuantityInSubUnits;
@@ -106,78 +118,203 @@ async function handleSalesTransaction(body, userId, companyId, userRole, res, Tr
     }
   
 
-  // Check inventory availability with company ID filter
-  const inventoryCheck = await checkInventoryAvailability(
-    productId,
-    fromStore,
-    actualQuantityInSubUnits,
-    "done", // Changed from "sub" to "done" since "done" is the correct status used in checkInventoryAvailability
-    companyId  // Add company ID parameter
-  );
+    // Calculate quantity in main measurement unit if using sub-measurement
+    let calculatedQuantity = quantity;
+    if (measurementType === 'sub' && product.sub_measurment_value) {
+      calculatedQuantity = quantity / product.sub_measurment_value;
+    }
 
-  if (!inventoryCheck.success) {
-    // Format error message with proper units
-    let errorMessage = inventoryCheck.success ? inventoryCheck.message : inventoryCheck.message;
+    // Check inventory availability
+    const inventoryCheck = await checkInventoryAvailabilityForSale(
+      productId,
+      fromStore,
+      calculatedQuantity,
+      "done",
+      companyId,
+      session,
+      used_products // Pass the custom used_products from request body
+    );
+
+    if (!inventoryCheck.success) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({
+        success: false,
+        message: inventoryCheck.message || "Insufficient inventory"
+      });
+    }
+
+    // Handle "forSale" products with component ingredients
+    if (product.type === "forSale" && product.used_products && product.used_products.length > 0) {
+      toast.info(`Processing forSale product with ${product.used_products.length} components`);
       
-    if (!inventoryCheck.success && product.sub_measurment_value == 1) {
-      const availableInSubUnits = inventoryCheck.available || 0;
-      const { wholeUnits, remainderSubUnits } = convertSubUnitsToWholeUnits(
-        availableInSubUnits,
-        subUnitsPerMainUnit
-      );
-
-      const formattedInventory = wholeUnits > 0 && remainderSubUnits > 0
-        ? `${wholeUnits} ${product.measurment_name} and ${remainderSubUnits} ${product.sub_measurment_name}`
-        : wholeUnits > 0
-          ? `${wholeUnits} ${product.measurment_name}`
-          : `${remainderSubUnits} ${product.sub_measurment_name}`;
+      // Create a "use" transaction for each component in the product
+      for (const component of product.used_products) {
+        // Skip if product or quantity is null
+        if (!component.productId || !component.quantity) {
+          toast.info(`Skipping component with missing productId or quantity`);
+          continue;
+        }
+        
+        // Get latest inventory record for the component
+        const latestInventory = await Transaction.find({
+          productId: component.productId,
+          fromStore: fromStore,
+          status: "done",
+          companyId: companyId
+        })
+        .sort({createdAt: -1})
+        .limit(1)
+        .session(session);
+        
+        if (!latestInventory.length) {
+          await session.abortTransaction();
+          session.endSession();
+          return res.status(400).json({
+            success: false,
+            message: `No inventory record found for component product ${component.productId}`
+          });
+        }
+        
+        // Get the component product details to find its selling price
+        const componentProduct = await Product.findOne({
+          _id: component.productId,
+          ...companyFilter
+        }).session(session);
+        
+        if (!componentProduct) {
+          await session.abortTransaction();
+          session.endSession();
+          return res.status(400).json({
+            success: false,
+            message: `Component product ${component.productId} not found or access denied`
+          });
+        }
+        
+        // Find the selling price for this store
+        const componentPriceDetails = componentProduct.selling_price && 
+          componentProduct.selling_price.find(price => price.storeId.toString() === fromStore);
+        
+        // Calculate unit price from the selling price
+        let unitPrice = 0;
+        if (componentPriceDetails && componentPriceDetails.price_sub_measurment) {
+          unitPrice = componentPriceDetails.price_sub_measurment;
+        } else {
+          // Fallback to latest purchase if selling price not found
+          const latestPurchase = await Transaction.find({
+            productId: component.productId,
+            transactionType: "purchase",
+            status: "done",
+            companyId: companyId
+          })
+          .sort({createdAt: -1})
+          .limit(1)
+          .session(session);
           
-      errorMessage = `Insufficient inventory. Only ${formattedInventory} available.`;
-    }    
+          if (latestPurchase.length > 0) {
+            unitPrice = latestPurchase[0].totalPrice / latestPurchase[0].quantity;
+          }
+        }
+        
+        // Calculate quantity to use based on the sale quantity
+        const componentQuantity = component.quantity * actualQuantityInSubUnits;
+        const currentRemaining = latestInventory[0].remaining;
+        
+        // Verify there's enough inventory for this component
+        if (currentRemaining < componentQuantity) {
+          await session.abortTransaction();
+          session.endSession();
+          return res.status(400).json({
+            success: false,
+            message: `Insufficient inventory for component. Required: ${componentQuantity}, Available: ${currentRemaining}`
+          });
+        }
+        
+        // Calculate total price for this component use
+        const componentTotalPrice = unitPrice * componentQuantity;
+        
+        // Create use transaction for this component
+        const useTransaction = new Transaction({
+          transactionType: "use",
+          status: "done",
+          productId: component.productId,
+          quantity: componentQuantity,
+          totalPrice: componentTotalPrice, // Use calculated price from selling price
+          remaining: currentRemaining - componentQuantity,
+          remainingBeforeTransfer: currentRemaining,
+          fromStore: fromStore,
+          date: date || new Date(),
+          user: userId,
+          companyId: companyId
+        });
+        console.log(useTransaction)
+        await useTransaction.save({ session });
+        console.log(`Created use transaction for component ${component.productId}, quantity: ${componentQuantity}, unit price: ${unitPrice}, total price: ${componentTotalPrice}`);
+      }
+    }
+
+ 
+    const priceDetails = product.selling_price.find(price => price.storeId.toString() === fromStore);
+    if (!priceDetails) {
+      await session.abortTransaction();
+      session.endSession();
+      return sendBadRequest(res, "No selling price of this product found for this store");
+    }
+
     
-    return sendBadRequest(res, errorMessage);
+    
+    
+    // Calculate total price
+    // If price is stored per main unit, we need to convert back
+    const totalPrice = actualQuantityInSubUnits * priceDetails.price_sub_measurment
+
+    // Calculate new remaining values in sub-units
+    const currentInventoryInSubUnits = inventoryCheck.remaining;
+    const newRemainingInSubUnits = currentInventoryInSubUnits - actualQuantityInSubUnits;
+
+
+
+    // Ensure we use the correct company ID for the transaction
+    // For admins viewing other companies' data, use the product's company ID
+    const transactionCompanyId = product.companyId || companyId;
+
+    // Create transaction - always store in sub-units when available
+    const transaction = new Transaction({
+      transactionType: "sale",
+      status: "done",
+      productId,
+      quantity: actualQuantityInSubUnits, // Always store in sub-units
+      totalPrice,
+      remaining: newRemainingInSubUnits, // Always store remaining in sub-units
+      remainingBeforeTransfer: currentInventoryInSubUnits,
+      fromStore,
+      date: date || new Date(),
+      user: userId,
+      companyId: transactionCompanyId, // Use appropriate company ID
+    });
+      
+    await transaction.save({ session });
+    
+    // Commit all changes
+    await session.commitTransaction();
+    session.endSession();
+      
+    return res.status(201).json({
+      success: true,
+      message: `Successfully sold!`,
+      data: transaction,
+    });
+  } catch (error) {
+    // Abort transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Sales API Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error processing sales transaction",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
   }
-
-  // Get selling price
-  const priceDetails = await getSellingPrice(fromStore, productId, companyId);
-  if (!priceDetails.success || !priceDetails.price) {
-    return res.status(400).json(priceDetails);
-  }
-
-  // Calculate total price
-  // If price is stored per main unit, we need to convert back
-  const totalPrice = actualQuantityInSubUnits * priceDetails.price
-
-// Calculate new remaining values in sub-units
-const currentInventoryInSubUnits = inventoryCheck.remaining;
-const newRemainingInSubUnits = currentInventoryInSubUnits - actualQuantityInSubUnits;
-
-
-
-  // Ensure we use the correct company ID for the transaction
-  // For admins viewing other companies' data, use the product's company ID
-  const transactionCompanyId = product.companyId || companyId;
-
-  // Create transaction - always store in sub-units when available
-  const transaction = await Transaction.create({
-    transactionType: "sale",
-    status: "done",
-    productId,
-    quantity: actualQuantityInSubUnits, // Always store in sub-units
-    totalPrice,
-    remaining: newRemainingInSubUnits, // Always store remaining in sub-units
-    remainingBeforeTransfer: currentInventoryInSubUnits,
-    fromStore,
-    date: date || new Date(),
-    user: userId,
-    companyId: transactionCompanyId, // Use appropriate company ID
-  });
-    await transaction.save()
-  return res.status(201).json({
-    success: true,
-    message: `Successfully sold!`,
-    data: transaction,
-  });
 }
 
 async function getSalesTransactions(req, res, Transaction, companyId, userRole) {

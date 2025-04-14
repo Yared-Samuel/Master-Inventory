@@ -120,14 +120,14 @@ const CompanyShow = () => {
                     </svg>
                   </div>
                 </div>
-              </div>
-            </Link>
+        </div>
+      </Link>
             
             {/* Card 3 */}
             <Link href="#" className="group">
               <div className="h-full bg-white/90 backdrop-blur-sm rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col border border-gray-200 hover:border-blue-200">
                 <div className="relative h-48 overflow-hidden">
-                  <Image
+        <Image
                     src="main-page/flit-image.svg"
                     alt="Engaging Website"
                     fill
@@ -157,14 +157,14 @@ const CompanyShow = () => {
                     </svg>
                   </div>
                 </div>
-              </div>
-            </Link>
+        </div>
+      </Link>
             
             {/* Card 4 */}
             <Link href="#" className="group">
               <div className="h-full bg-white/90 backdrop-blur-sm rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col border border-gray-200 hover:border-blue-200">
                 <div className="relative h-48 overflow-hidden">
-                  <Image
+        <Image
                     src="main-page/inv-image.svg"
                     alt="Cloud Solutions"
                     fill
@@ -194,14 +194,14 @@ const CompanyShow = () => {
                     </svg>
                   </div>
                 </div>
-              </div>
-            </Link>
+        </div>
+      </Link>
             
             {/* Card 5 (New) */}
             <Link href="#" className="group">
               <div className="h-full bg-white/90 backdrop-blur-sm rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col border border-gray-200 hover:border-blue-200">
                 <div className="relative h-48 overflow-hidden">
-                  <Image
+        <Image
                     src="main-page/inv-image.svg"
                     alt="Data Analytics"
                     fill

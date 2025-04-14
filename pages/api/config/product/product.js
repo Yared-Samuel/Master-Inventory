@@ -19,6 +19,7 @@ async function handler(req, res) {
     await connect();
     const Product = getProductModel();
     const { method, query, body } = req;
+    console.log(body)
 
     switch (method) {
       case "POST": {
@@ -89,4 +90,4 @@ async function handler(req, res) {
 
 // Use our new protectRoute middleware with allowed roles
 // Admin, company_admin can manage products, but temporarily allow all roles for testing
-export default protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance', 'user'])(handler);
+export default protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance'])(handler);

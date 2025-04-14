@@ -34,17 +34,58 @@ async function handler(req, res) {
       case "PUT":
         const updates = req.body;
         
-        const updatedProduct = await Product.findOneAndUpdate(
-          filter,
-          updates,
-          { new: true, runValidators: true }
-        );
-        
-        if (!updatedProduct) {
-          return sendNotFound(res, "Product not found or you don't have permission to update it");
+        // Validate selling_price array if provided
+        if (updates.selling_price) {
+          // Ensure it's an array
+          if (!Array.isArray(updates.selling_price)) {
+            return sendBadRequest(res, "selling_price must be an array");
+          }
+          
+          // Validate each entry in the selling_price array
+          for (const price of updates.selling_price) {
+            if (!price.storeId) {
+              return sendBadRequest(res, "Each selling price must have a storeId");
+            }
+            if (typeof price.price_sub_measurment !== 'number') {
+              return sendBadRequest(res, "Each selling price must have a valid price_sub_measurment");
+            }
+            // price_main_measurment is optional
+          }
         }
         
-        return sendSuccess(res, "Product updated successfully", updatedProduct);
+        // Validate used_products array if provided
+        if (updates.used_products) {
+          // Ensure it's an array
+          if (!Array.isArray(updates.used_products)) {
+            return sendBadRequest(res, "used_products must be an array");
+          }
+          
+          // Validate each entry in the used_products array
+          for (const component of updates.used_products) {
+            if (!component.productId) {
+              return sendBadRequest(res, "Each component must have a productId");
+            }
+            if (typeof component.quantity !== 'number' || component.quantity <= 0) {
+              return sendBadRequest(res, "Each component must have a valid quantity");
+            }
+          }
+        }
+        
+        try {
+          const updatedProduct = await Product.findOneAndUpdate(
+            filter,
+            updates,
+            { new: true, runValidators: true }
+          );
+          
+          if (!updatedProduct) {
+            return sendNotFound(res, "Product not found or you don't have permission to update it");
+          }
+          
+          return sendSuccess(res, "Product updated successfully", updatedProduct);
+        } catch (error) {
+          return sendBadRequest(res, `Error updating product: ${error.message}`);
+        }
         
       case "DELETE":
         // Soft delete by setting isActive to false

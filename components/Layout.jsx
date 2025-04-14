@@ -40,11 +40,11 @@ const Layout = ({children}) => {
         <div className="flex items-center justify-between mb-6">
           <div
             
-            className="flex border-b-2 border-t-2 border-gray-300"
+            className="flex border-b-2 border-t-2 border-red-300"
           >
-            <Image src={"logo.svg"} alt="logo" width={30} height={30} className='rounded-full' />
-            <span className={`text-xl font-bold text-[#1066A8] transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
-            <span className={`${isSidebarOpen ? '' : 'hidden'}`}>MELA</span>
+            <Image src={"/logo.svg"} alt="logo" width={27} height={27} className='rounded-full' />
+            <span className={`text-l font-bold text-[#1066A8] transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
+            <span className={`${isSidebarOpen ? '' : 'hidden'}`}>MALEDA</span>
             </span>
           </div>
           
