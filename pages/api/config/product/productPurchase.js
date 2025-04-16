@@ -15,7 +15,7 @@ async function handler(req, res) {
         const companyFilter = req.user.role === 'admin' ? {} : { companyId: req.user.companyId };
         
         // Find all products for the user's company
-        const products = await Product.find(companyFilter)
+        const products = await Product.find({...companyFilter,  isActive: true })
           .sort("-createdAt");
           
         return sendSuccess(res, "Products retrieved successfully", products);
@@ -33,4 +33,4 @@ async function handler(req, res) {
   }
 }
 
-export default protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance', 'user'])(handler);
+export default protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance'])(handler);

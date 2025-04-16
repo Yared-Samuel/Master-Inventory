@@ -177,11 +177,36 @@ const SalesForm = () => {
         : comp
     );
     setComponentDetails(updatedDetails);
+  };
+
+  // Handle change in total required quantity
+  const handleTotalRequiredChange = (productId, newTotal) => {
+    const baseQty = quantity && !isNaN(Number(quantity)) ? Number(quantity) : 0;
+    let adjustedQty = baseQty;
     
-    // Recalculate costs
-    if (quantity) {
-      calculateComponentCosts(Number(quantity), updatedDetails);
+    // Adjust quantity if using sub-measurement
+    if (selectedProduct && measurementType === 'sub' && selectedProduct.sub_measurment_value) {
+      adjustedQty = baseQty / selectedProduct.sub_measurment_value;
     }
+
+    // Calculate new required quantity per unit
+    const newRequiredQuantity = adjustedQty > 0 ? parseFloat(newTotal) / adjustedQty : 0;
+
+    // Update editable components
+    const updatedComponents = editableComponents.map(comp => 
+      comp.productId === productId 
+        ? { ...comp, quantity: newRequiredQuantity } 
+        : comp
+    );
+    setEditableComponents(updatedComponents);
+    
+    // Update component details for display purposes
+    const updatedDetails = componentDetails.map(comp => 
+      comp._id === productId 
+        ? { ...comp, requiredQuantity: newRequiredQuantity } 
+        : comp
+    );
+    setComponentDetails(updatedDetails);
   };
   
   // Calculate the cost of all components based on quantity
@@ -298,6 +323,25 @@ const SalesForm = () => {
       toast.error("This product doesn't have a sub-measurement unit defined");
       return false;
     }
+
+    // Validate component quantities
+    if (componentDetails.length > 0) {
+      for (const comp of componentDetails) {
+        const baseQty = quantity && !isNaN(Number(quantity)) ? Number(quantity) : 0;
+        let adjustedQty = baseQty;
+        
+        if (selectedProduct && measurementType === 'sub' && selectedProduct.sub_measurment_value) {
+          adjustedQty = baseQty / selectedProduct.sub_measurment_value;
+        }
+        
+        const totalRequired = comp.requiredQuantity * adjustedQty;
+        
+        if (totalRequired <= 0) {
+          toast.error(`${comp.name} quantity must be greater than 0`);
+          return false;
+        }
+      }
+    }
     
     return true;
   };
@@ -314,9 +358,6 @@ const SalesForm = () => {
     try {
       setLoading(true);
       
-      
-      
-      
       const res = await fetch("/api/transaction/sales", {
         method: "POST",
         headers: {
@@ -324,11 +365,11 @@ const SalesForm = () => {
         },
         body: JSON.stringify({
           productId, 
-        quantity: Number(quantity),
-        measurementType,
-        fromStore, 
-        used_products: editableComponents || [],
-        date: date || new Date().toISOString().split('T')[0]
+          quantity: Number(quantity),
+          measurementType,
+          fromStore, 
+          used_products: editableComponents || [],
+          date: date || new Date().toISOString().split('T')[0]
         }),
       });
       
@@ -549,9 +590,7 @@ const SalesForm = () => {
                       <tr className="border-b">
                         <th className="text-left py-2 px-1">Ingredient</th>
                         <th className="text-left py-2 px-1">Required per Unit</th>
-                        <th className="text-left py-2 px-1">Unit Price</th>
                         <th className="text-left py-2 px-1">Total Required</th>
-                        <th className="text-left py-2 px-1">Subtotal</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -566,7 +605,6 @@ const SalesForm = () => {
                         }
                         
                         const totalRequired = comp.requiredQuantity * adjustedQty;
-                        const subtotal = totalRequired * comp.pricePerUnit;
                         
                         return (
                           <tr key={comp._id} className="border-b border-gray-100">
@@ -584,18 +622,22 @@ const SalesForm = () => {
                                 <span className="ml-2">{comp.measurment_name}</span>
                               </div>
                             </td>
-                            <td className="py-2 px-1">${comp.pricePerUnit.toFixed(2)}</td>
                             <td className="py-2 px-1">
-                              {totalRequired.toFixed(2)} {comp.measurment_name}
+                              <div className="flex items-center">
+                                <input
+                                  type="number"
+                                  step="any"
+                                  min="0"
+                                  value={totalRequired}
+                                  onChange={(e) => handleTotalRequiredChange(comp._id, e.target.value)}
+                                  className="w-20 p-1 border rounded text-sm"
+                                />
+                                <span className="ml-2">{comp.measurment_name}</span>
+                              </div>
                             </td>
-                            <td className="py-2 px-1">${subtotal.toFixed(2)}</td>
                           </tr>
                         );
                       })}
-                      <tr className="bg-blue-50">
-                        <td colSpan="4" className="py-2 px-1 text-right font-medium">Total Component Cost:</td>
-                        <td className="py-2 px-1 font-medium">${componentTotalCost.toFixed(2)}</td>
-                      </tr>
                     </tbody>
                   </table>
                 </div>

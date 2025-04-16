@@ -11,7 +11,7 @@ export default async function logginStatus(req, res) {
       return sendSuccess(res, "User not logged in", { isLoggedIn: false });
     }
     
-    const user = await User.findById(userData.id).select('-password');
+    const user = await User.findById(userData.id).select('-password').populate('companyId');
     
     if (!user) {
       return sendSuccess(res, "User not found", { isLoggedIn: false });
@@ -24,7 +24,8 @@ export default async function logginStatus(req, res) {
         name: user.name,
         email: user.email,
         role: user.role,
-        companyId: user.companyId
+        companyId: user.companyId._id,
+        companyName: user.companyId.name
       }
     });
   } catch (error) {

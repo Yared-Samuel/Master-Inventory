@@ -92,7 +92,7 @@ async function handler(req, res) {
         const deactivatedProduct = await Product.findOneAndUpdate(
           filter,
           { isActive: false },
-          { new: true }
+          
         );
         
         if (!deactivatedProduct) {

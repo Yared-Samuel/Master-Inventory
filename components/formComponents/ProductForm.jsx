@@ -172,7 +172,8 @@ const ProductForm = () => {
     }
 
     // Validate at least one selling price is added
-    if (selling_price.length === 0) {
+ 
+    if (type === "finished" && selling_price.length === 0) {
       toast.error("Please add at least one store pricing");
       return;
     }
@@ -215,7 +216,7 @@ const ProductForm = () => {
   };
 
   return (
-    <div className="bg-slate-100 px-4 py-1 rounded-md shadow-md">
+    <div className=" px-4 py-1">
       <form onSubmit={saveProduct}>
         {
           loading ? <LoadingComponent /> : (
@@ -224,7 +225,7 @@ const ProductForm = () => {
                 <div>
                   <label
                     htmlFor="name"
-                    className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
+                    className="block text-sm font-medium text-gray-700"
                   >
                     Product Name{" "}
                     {/* <span className="text-white bg-slate-600 p-1 border rounded-lg">
@@ -244,7 +245,7 @@ const ProductForm = () => {
                 <div>
                   <label
                     htmlFor="type"
-                    className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
+                    className="block text-sm font-medium text-gray-700"
                   >
                     Type{" "}
                     {/* <span className="text-white bg-slate-600 p-1 border rounded-lg">
@@ -269,7 +270,7 @@ const ProductForm = () => {
                 <div>
                   <label
                     htmlFor="measurmant_name"
-                    className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white text-wrap"
+                    className="block text-sm font-medium text-gray-700 text-wrap"
                   >
                     Measurment Name{" "}
                     {/* <span className="text-white bg-slate-600 p-1 border rounded-lg">
@@ -289,7 +290,7 @@ const ProductForm = () => {
                 <div>
                   <label
                     htmlFor="sub_measurment_name"
-                    className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
+                    className="block text-sm font-medium text-gray-700"
                   >
                     Sub-Measurment{" "}
                     {/* <span className="text-white bg-slate-600 p-1 border rounded-lg">
@@ -309,7 +310,7 @@ const ProductForm = () => {
                 <div>
                   <label
                     htmlFor="sub_measurment_value"
-                    className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
+                    className="block text-sm font-medium text-gray-700"
                   >
                     Sub-Measurment Value{" "}
                     {/* <span className="text-white bg-slate-600 p-1 border rounded-lg">

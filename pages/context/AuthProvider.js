@@ -13,7 +13,6 @@ export const AuthProvider = ({ children }) => {
             const savedAuth = localStorage.getItem('authData');
             try {
                 const parsed = savedAuth ? JSON.parse(savedAuth) : {};
-                console.log("Loaded auth from storage:", parsed);
                 return parsed;
             } catch (e) {
                 console.error("Error parsing saved auth data:", e);

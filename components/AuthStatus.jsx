@@ -16,7 +16,8 @@ const AuthStatus = () => {
         borderRadius: '5px',
         zIndex: 1000,
         fontSize: '12px',
-        maxWidth: '300px'
+        maxWidth: '300px',
+        opacity: 0.6
       }}>
         <h4 style={{ margin: '0 0 5px 0' }}>Auth Status:</h4>
         <div>
@@ -27,6 +28,9 @@ const AuthStatus = () => {
         </div>
         <div>
           <strong>Role:</strong> {auth.role || 'Not set'}
+        </div>
+        <div>
+          <strong>Company:</strong> {auth.companyName || 'Not set'}
         </div>
       </div>
     );

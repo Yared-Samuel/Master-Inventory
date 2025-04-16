@@ -48,7 +48,8 @@ const Login = () => {
           email: userData.email,
           role: userData.role,
           companyId: userData.companyId,
-          permissions: userData.permissions || {}
+          permissions: userData.permissions || {},
+          companyName: userData.companyName
         });
         
         // Show success message

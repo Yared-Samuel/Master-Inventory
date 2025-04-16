@@ -37,7 +37,7 @@ const roleConfig = {
   },
   'user': {
     loginMessage: "User login successful",
-    dashboardRedirect: "/dashboard"
+    dashboardRedirect: "/"
   }
 };
 
@@ -55,7 +55,7 @@ export default async function Login(req, res) {
     
     // Get models from registry
     const User = getUserModel();
-    const Company = getCompanyModel();
+    // const Company = getCompanyModel();
 
     // Find user and populate company details
     const user = await User.findOne({ email })
@@ -67,24 +67,24 @@ export default async function Login(req, res) {
       return sendNotFound(res, "User not found");
     }
     
-    console.log(`User found: ${user.name}, role: ${user.role}`);
+    // console.log(`User found: ${user.name}, role: ${user.role}`);
     
     // Check if user is active
     if (!user.isActive) {
-      console.log(`User account is inactive: ${email}`);
+      // console.log(`User account is inactive: ${email}`);
       return sendUnauthorized(res, "Your account has been deactivated");
     }
     
     // Check if company is active
     if (!user.companyId || !user.companyId.isActive) {
-      console.log(`Company is inactive for user: ${email}`);
+      // console.log(`Company is inactive for user: ${email}`);
       return sendUnauthorized(res, "Company account is inactive");
     }
     
     // Check subscription status (optional, can be expanded based on needs)
     const hasValidSubscription = validateSubscription(user.companyId.subscription);
     if (!hasValidSubscription && user.role !== 'admin') {
-      console.log(`Subscription expired for user: ${email}`);
+      // console.log(`Subscription expired for user: ${email}`);
       return sendUnauthorized(res, "Company subscription has expired");
     }
 
@@ -95,9 +95,9 @@ export default async function Login(req, res) {
     try {
       isValidPassword = await bcrypt.compare(password, user.password);
       
-      console.log(`Password verification result: ${isValidPassword}`);
+      // console.log(`Password verification result: ${isValidPassword}`);
       if (!isValidPassword) {
-        console.log('Password verification failed. Stored password hash:', user.password);
+        // console.log('Password verification failed. Stored password hash:', user.password);
       }
     } catch (err) {
       console.error(`Error during password verification: ${err.message}`);

@@ -16,7 +16,8 @@ async function handler(req, res) {
         const companyFilter = req.user.role === 'admin' ? {} : { companyId: req.user.companyId };
         const products = await Product.find({
           ...companyFilter,
-          type: { $in: ['raw','finished'] }
+          type: { $in: ['raw','finished'] },
+          isActive: true
         })
           .lean(); // Converts Mongoose documents to plain JavaScript objects - more memory efficient and faster        
         return sendSuccess(res, "Products retrieved successfully", products);

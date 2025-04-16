@@ -19,7 +19,7 @@ async function handler(req, res) {
     await connect();
     const Product = getProductModel();
     const { method, query, body } = req;
-    console.log(body)
+    
 
     switch (method) {
       case "POST": {
@@ -39,7 +39,7 @@ async function handler(req, res) {
         // Get products for the current company only
         // Note: For admin users, the company filter won't be applied due to our middleware
         const companyFilter = req.user.role === 'admin' ? {} : { companyId: req.user.companyId };
-        const products = await Product.find(companyFilter)
+        const products = await Product.find({...companyFilter,  isActive: true} )
           .sort("-createdAt")
           .populate("user", "name")
           .lean();        

@@ -13,6 +13,8 @@ import TanStackTable from "../tanStackTableComponents/TanStackTable";
 import AuthContext from "@/pages/context/AuthProvider";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
+import ToggleComponent from "../ToggleComponent";
+import TableToggleComponent from "../TableToggleComponent";
 
 
 const TableProductList = () => {
@@ -26,6 +28,9 @@ const TableProductList = () => {
   const [product, setPoduct] = useState({
     name: "",
     type: "",
+    measurment_name: "",
+    sub_measurment_name: "",
+    sub_measurment_value: "",
     selling_price: [],
     used_products: []
   });
@@ -34,6 +39,8 @@ const TableProductList = () => {
   const [error, setError] = useState(null);
   const [stores, setStores] = useState([]);
   const [availableProducts, setAvailableProducts] = useState([]);
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
   
 
   const router = useRouter();
@@ -99,26 +106,53 @@ const TableProductList = () => {
           {
             header: "Actions",
             cell: ({ row }) => (
-              <button className="bg-transparent border-none">
-                <Link
-                  href={`/configs/products`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setUpdateId(row.original._id);
-                  }}
-                  className="group relative"
-                >
-                  <Image
-                    src={"/icons/edit-icon.svg"}
-                    alt="update"
-                    width={20}
-                    height={20}
-                  />
-                  {/* <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                    Edit
-                  </span> */}
-                </Link>
-              </button>
+              <div className="flex items-center gap-2 md:gap-4">
+                <button className="p-1 rounded-full hover:bg-blue-50 transition-colors duration-200">
+                  <Link
+                    href={`/configs/products`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setUpdateId(row.original._id);
+                    }}
+                    className="group relative flex items-center justify-center"
+                  >
+                    <Image
+                      src={"/icons/edit-icon.svg"}
+                      alt="update"
+                      width={20}
+                      height={20}
+                      className="transform transition-transform group-hover:scale-110" 
+                    />
+                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg">
+                      Edit
+                    </span>
+                  </Link>
+                </button>
+                <button className="p-1 rounded-full hover:bg-red-50 transition-colors duration-200">
+                  <Link
+                    href={`/configs/products/delete/${row.original._id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setDeleteId(row.original._id);
+                      setDeleteModalOpen(true);
+                    }}
+                    className="group relative flex items-center justify-center"
+                  >
+                    <Image
+                      src={"/icons/delete-icon.svg"}
+                      alt="delete"
+                      width={20}
+                      height={20}
+                      className="transform transition-transform group-hover:scale-110"
+                    />
+                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg">
+                      Delete
+                    </span>
+                  </Link>
+                </button>
+
+              </div>
+            
             ),
           },
         ]
@@ -146,6 +180,9 @@ const TableProductList = () => {
         setPoduct({ 
           name: targetData.name, 
           type: targetData.type,
+          measurment_name: targetData.measurment_name || "",
+          sub_measurment_name: targetData.sub_measurment_name || "",
+          sub_measurment_value: targetData.sub_measurment_value || "",
           selling_price: targetData.selling_price || [],
           used_products: targetData.used_products || []
         });
@@ -252,12 +289,14 @@ const TableProductList = () => {
   const updateProduct = async (e) => {
     e.preventDefault();
 
-    const { name, type, selling_price, used_products } = product;
+    const { name, type, measurment_name, sub_measurment_name, selling_price, used_products } = product;
     
     if (!name || !type) {
       toast.error("Both name and type are required");
       return;
     }
+
+  
 
     // Validate selling_price entries
     if (selling_price && selling_price.length > 0) {
@@ -293,7 +332,14 @@ const TableProductList = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, type, selling_price, used_products }),
+        body: JSON.stringify({ 
+          name, 
+          type, 
+          measurment_name, 
+          sub_measurment_name, 
+          selling_price, 
+          used_products 
+        }),
       });
 
       const result = await response.json();
@@ -327,6 +373,32 @@ const TableProductList = () => {
         Product List
       </TanStackTable>
       </div>
+      {/* Delete Confirmation Modal */}
+      <TableToggleComponent
+        isVisible={isDeleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="Confirm Delete"
+        message="Are you sure you want to delete this product? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={async () => {
+          try {
+            const response = await fetch(`/api/config/product/${deleteId}`, {
+              method: "DELETE",
+            });
+            const result = await response.json();
+            if (response.ok) {
+              router.reload();
+              toast.success(result.message);
+            } else {
+              toast.error(result.message);
+            }
+          } catch (error) {
+            toast.error("An error occurred while deleting the product");
+          }
+          setDeleteModalOpen(false);
+        }}
+        confirmButtonClassName="bg-red-600 hover:bg-red-700"
+      />
       {/* Update Modal */}
       {isModalOpen && (
         <div
@@ -349,22 +421,11 @@ const TableProductList = () => {
                   onClick={toggleModal}
                   type="button"
                   className="text-gray-600 bg-transparent hover:bg-red-100 hover:text-red-600 rounded-lg text-sm p-2 ml-auto inline-flex items-center transition-colors duration-200"
+                  aria-label="Close"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  <span className="sr-only">Close modal</span>
                 </button>
               </div>
               
@@ -414,6 +475,44 @@ const TableProductList = () => {
                         ))}
                       </select>
                     </div>
+
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="measurment_name"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Measurement Name
+                      </label>
+                      <input
+                        name="measurment_name"
+                        value={product.measurment_name || ""}
+                        onChange={handleInputChange}
+                        type="text"
+                        id="measurment_name"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 transition duration-150 ease-in-out"
+                        placeholder="e.g., kg, liter, piece"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="sub_measurment_name"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Sub-Measurement Name
+                      </label>
+                      <input
+                        name="sub_measurment_name"
+                        value={product.sub_measurment_name || ""}
+                        onChange={handleInputChange}
+                        type="text"
+                        id="sub_measurment_name"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 transition duration-150 ease-in-out"
+                        placeholder="e.g., gram, ml"
+                      />
+                    </div>
+
+                    
                   </div>
                   
                   {/* Selling Price Section */}
@@ -438,7 +537,7 @@ const TableProductList = () => {
                     </div>
                     
                     {product.selling_price && product.selling_price.length > 0 ? (
-                      <div className="space-y-3 max-h-48 overflow-y-auto p-3 bg-gray-50 rounded-lg border border-gray-100">
+                      <div className="space-y-3 max-h-48 overflow-y-auto p-2 bg-gray-50 rounded-lg border border-gray-100">
                         {product.selling_price.map((price, index) => (
                           <div key={index} className="flex items-end space-x-3 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
                             <div className="flex-1">
@@ -446,7 +545,7 @@ const TableProductList = () => {
                               <select
                                 value={price.storeId || ""}
                                 onChange={(e) => handleSellingPriceChange(index, 'storeId', e.target.value)}
-                                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
+                                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1"
                               >
                                 <option value="">Select Store</option>
                                 {stores.map((store) => (
@@ -512,7 +611,7 @@ const TableProductList = () => {
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                           </svg>
-                          Components/Ingredients
+                          Ingredients
                         </h4>
                         <button
                           type="button"
@@ -551,10 +650,10 @@ const TableProductList = () => {
                               <div className="w-24">
                                 <label className="block text-xs font-medium text-gray-700 mb-1">Quantity</label>
                                 <input
-                                  type="number"
-                                  step="0.01"
-                                  min="0.01"
-                                  value={component.quantity || 1}
+                                  type="number" 
+                                  step="1"
+                                  min="1"
+                                  value={component.quantity}
                                   onChange={(e) => handleComponentChange(index, 'quantity', e.target.value)}
                                   className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 w-full"
                                 />
