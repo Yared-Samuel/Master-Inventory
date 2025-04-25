@@ -1,6 +1,6 @@
 import { generateToken } from "@/actions/jwt";
 import connect from "@/lib/db";
-import { getUserModel, getCompanyModel } from "@/lib/models";
+import { getUserModel } from "@/lib/models";
 import { sendSuccess, sendError, sendBadRequest, sendNotFound, sendUnauthorized } from "@/lib/utils/responseHandler";
 import { serialize } from "cookie";
 import bcrypt from 'bcryptjs';
@@ -52,11 +52,12 @@ export default async function Login(req, res) {
 
     // Important: Connect to database before using models
     await connect();
-    
+
+    console.log("connected")
     // Get models from registry
     const User = getUserModel();
     // const Company = getCompanyModel();
-
+    console.log(User)
     // Find user and populate company details
     const user = await User.findOne({ email })
       .select('+password')
@@ -66,8 +67,7 @@ export default async function Login(req, res) {
       console.log(`User not found: ${email}`);
       return sendNotFound(res, "User not found");
     }
-    
-    // console.log(`User found: ${user.name}, role: ${user.role}`);
+    console.log(user)
     
     // Check if user is active
     if (!user.isActive) {
@@ -83,6 +83,7 @@ export default async function Login(req, res) {
     
     // Check subscription status (optional, can be expanded based on needs)
     const hasValidSubscription = validateSubscription(user.companyId.subscription);
+    console.log(hasValidSubscription, "hasValidSubscription")
     if (!hasValidSubscription && user.role !== 'admin') {
       // console.log(`Subscription expired for user: ${email}`);
       return sendUnauthorized(res, "Company subscription has expired");
@@ -160,8 +161,10 @@ function validateSubscription(subscription) {
   
   // If there's an expiry date, check it
   if (subscription.expiresAt) {
+    
     const now = new Date();
     const expiryDate = new Date(subscription.expiresAt);
+    console.log(now, expiryDate)
     return now < expiryDate;
   }
   
