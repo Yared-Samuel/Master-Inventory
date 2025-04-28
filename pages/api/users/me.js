@@ -1,58 +1,47 @@
-import { getRequestHandler } from '@/lib/utils/getRequestHandler';
-import { getDataFromToken } from '@/lib/getDataFromToken';
-import { getModel } from '@/lib/models';
+import connect from "@/lib/db";
+import { getUserModel } from "@/lib/models";
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
-import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
+import { sendSuccess, sendError } from "@/lib/utils/responseHandler";
+
+const User = getUserModel();
 
 async function handler(req, res) {
-    if (req.method !== 'GET') {
-        return res.status(405).json({ success: false, error: 'Method not allowed' });
+  try {
+    const { method } = req;
+    
+    if (method !== "GET") {
+      return res.status(405).json({ success: false, message: "Method not allowed" });
     }
-
-    try {
-        const token = req.cookies?.token;
-        
-        if (!token) {
-            return res.status(401).json({ success: false, error: 'Authentication required' });
-        }
-
-        const tokenData = await getDataFromToken(token);
-        
-        if (!tokenData.success) {
-            return res.status(401).json({ success: false, error: tokenData.error || 'Invalid authentication' });
-        }
-
-        const User = getModel('User');
-        const user = await User.findById(tokenData.id)
-            .select('-password')
-            .populate('companyId', 'name isActive subscription');
-
-        if (!user) {
-            return res.status(404).json({ success: false, error: 'User not found' });
-        }
-
-        if (!user.isActive) {
-            return res.status(403).json({ success: false, error: 'Account is deactivated' });
-        }
-
-        return res.status(200).json({
-            success: true,
-            data: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                companyId: user.companyId._id,
-                companyName: user.companyId.name,
-                isActive: user.isActive,
-                permissions: user.permissions
-            }
-        });
-    } catch (error) {
-        console.error('Error in me route:', error);
-        return res.status(500).json({ success: false, error: 'Server error' });
-    }
+    
+    await connect();
+    
+    // The withTenant middleware decodes the JWT token from the request cookies
+    // and adds the decoded user data (id, role, companyId) to req.user
+    // This data was originally set during login/registration
+    const { id, role, companyId } = req.user;
+    
+    // Fetch complete user data if needed
+    const user = await User.findById(id)
+      .select('-password')
+      .populate('companyId', 'name isActive subscription');
+    
+    return sendSuccess(res, "User information retrieved successfully", {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      company: {
+        _id: user.companyId._id,
+        name: user.companyId.name,
+        isActive: user.companyId.isActive,
+        subscription: user.companyId.subscription
+      },
+      lastLogin: user.lastLogin
+    });
+  } catch (error) {
+    return sendError(res, error);
+  }
 }
 
-// Wrap handler with both middlewares
-export default withTenant(withUsageTracking(handler)); 
+// Wrap handler with tenant middleware
+export default withTenant(handler); 

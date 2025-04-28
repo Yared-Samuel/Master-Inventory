@@ -22,8 +22,8 @@ const TitleComponent = ({pathName, children}) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
                 <span className="text-sm md:text-base font-medium text-white tracking-wide">
-                  {auth.companyName}
-                </span>
+                {auth.companyName}
+              </span>
               </div>
             </div>
             <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-sm px-6 py-2.5 rounded-full shadow-lg border border-white/10 hover:from-purple-600/30 hover:to-pink-600/30 transition-all duration-300">
