@@ -14,6 +14,8 @@ import {
   getPurchasePrice,
   getSellingPrice,
 } from "@/lib/inventory/inventoryUtils";
+import { withTenant } from "@/lib/middleware/tenantMiddleware";
+import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 async function handler(req, res) {
   try {
@@ -261,12 +263,12 @@ function validateTransferInput(productId, quantity, fromStore, toStore) {
   );
 }
 
-// Use protectRoute middleware to get user data including company ID
-export default protectRoute([
+// Wrap handler with both middlewares
+export default withTenant(withUsageTracking(protectRoute([
   "admin",
   "company_admin",
   "storeMan",
   "barMan",
   "finance",
   "user",
-])(handler);
+])(handler)));

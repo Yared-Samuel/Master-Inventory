@@ -2,6 +2,8 @@ import connect from "@/lib/db";
 import { getProductModel } from "@/lib/models";
 import { protectRoute } from "@/lib/middleware/roleMiddleware";
 import { sendSuccess, sendError, sendBadRequest } from "@/lib/utils/responseHandler";
+import { withTenant } from "@/lib/middleware/tenantMiddleware";
+import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 async function handler(req, res) {
   try {
@@ -33,6 +35,5 @@ async function handler(req, res) {
   }
 }
 
-// Use our new protectRoute middleware with allowed roles
-// Admin, company_admin can manage products, but temporarily allow all roles for testing
-export default protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance', 'user'])(handler);
+// Wrap handler with both middlewares
+export default withTenant(withUsageTracking(protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance', 'user'])(handler)));

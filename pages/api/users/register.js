@@ -4,12 +4,14 @@ import { getUserModel, getCompanyModel, getTokenModel } from "@/lib/models";
 import { sendSuccess, sendError, sendBadRequest } from "@/lib/utils/responseHandler";
 import { serialize } from "cookie";
 import mongoose from "mongoose";
+import { withTenant } from "@/lib/middleware/tenantMiddleware";
+import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 const User = getUserModel();
 const Company = getCompanyModel();
 const Token = getTokenModel();
 
-export default async function Register(req, res) {
+async function handler(req, res) {
   const { name, email, password, role, companyName, companyId } = req.body;
 
   // Basic input validation
@@ -136,3 +138,6 @@ export default async function Register(req, res) {
     return sendError(res, error);
   }
 }
+
+// Wrap handler with both middlewares
+export default withTenant(withUsageTracking(handler));

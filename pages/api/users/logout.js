@@ -1,7 +1,9 @@
 import { sendSuccess } from "@/lib/utils/responseHandler";
 import { serialize } from "cookie";
+import { withTenant } from "@/lib/middleware/tenantMiddleware";
+import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   // Only allow POST for logout operations
   if (req.method !== 'POST') {
     return res.status(405).json({
@@ -28,4 +30,7 @@ export default async function handler(req, res) {
       message: "Error during logout"
     });
   }
-} 
+}
+
+// Wrap handler with both middlewares
+export default withTenant(withUsageTracking(handler)); 

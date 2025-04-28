@@ -42,7 +42,9 @@ async function handler(req, res) {
 
       case "GET": {
         // Get stores for the current company only or all stores for admin
+
         const companyFilter = req.user.role === 'admin' ? {} : { companyId: req.user.companyId };
+        console.log(companyFilter)
         
         const stores = await StoreList.find(companyFilter)
           .sort("-createdAt")

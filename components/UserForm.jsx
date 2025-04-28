@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 
 const UserForm = ({ onSuccess, initialData = {}, isAdmin = false }) => {
   const [companies, setCompanies] = useState([]);
+  const [stores, setStores] = useState([]);
   const [formData, setFormData] = useState({
     name: initialData.name || '',
     email: initialData.email || '',
@@ -10,11 +11,13 @@ const UserForm = ({ onSuccess, initialData = {}, isAdmin = false }) => {
     confirmPassword: '',
     role: initialData.role || 'user',
     companyId: initialData.companyId?._id || initialData.companyId || '',
-    isActive: initialData.isActive !== undefined ? initialData.isActive : true
+    isActive: initialData.isActive !== undefined ? initialData.isActive : true,
+    assignedStores: initialData.assignedStores || []
   });
   
   const [loading, setLoading] = useState(false);
   const [fetchingCompanies, setFetchingCompanies] = useState(false);
+  const [fetchingStores, setFetchingStores] = useState(false);
   
   // Fetch companies for dropdown if admin
   useEffect(() => {
@@ -40,12 +43,48 @@ const UserForm = ({ onSuccess, initialData = {}, isAdmin = false }) => {
     
     getCompanies();
   }, [isAdmin]);
+
+  // Fetch stores when company is selected
+  useEffect(() => {
+    const getStores = async () => {
+      if (!formData.companyId) return;
+      
+      setFetchingStores(true);
+      try {
+        const response = await fetch('/api/config/store/store');
+        const result = await response.json();
+        
+        if (result.success) {
+          // Filter stores by company if not admin
+          const filteredStores = isAdmin ? result.data : 
+            result.data.filter(store => store.companyId === formData.companyId);
+          setStores(filteredStores);
+        } else {
+          toast.error(result.message || 'Failed to fetch stores');
+        }
+      } catch (error) {
+        toast.error('Error fetching stores');
+      } finally {
+        setFetchingStores(false);
+      }
+    };
+    
+    getStores();
+  }, [formData.companyId, isAdmin]);
   
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleStoreSelect = (e) => {
+    const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+    setFormData(prev => ({
+      ...prev,
+      assignedStores: selectedOptions
     }));
   };
   
@@ -103,7 +142,8 @@ const UserForm = ({ onSuccess, initialData = {}, isAdmin = false }) => {
         email: formData.email,
         role: formData.role,
         companyId: formData.companyId,
-        isActive: formData.isActive
+        isActive: formData.isActive,
+        assignedStores: formData.assignedStores
       };
       
       // Include password only if set
@@ -115,6 +155,8 @@ const UserForm = ({ onSuccess, initialData = {}, isAdmin = false }) => {
       if (initialData._id) {
         apiData._id = initialData._id;
       }
+
+
       
       // Determine endpoint and method
       const isUpdate = !!initialData._id;
@@ -150,7 +192,8 @@ const UserForm = ({ onSuccess, initialData = {}, isAdmin = false }) => {
           confirmPassword: '',
           role: 'user',
           companyId: formData.companyId, // Keep the selected company for convenience
-          isActive: true
+          isActive: true,
+          assignedStores: []
         });
       }
       
@@ -275,6 +318,36 @@ const UserForm = ({ onSuccess, initialData = {}, isAdmin = false }) => {
             </p>
           )}
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Assigned Stores
+        </label>
+        <select
+          multiple
+          name="assignedStores"
+          value={formData.assignedStores}
+          onChange={handleStoreSelect}
+          disabled={fetchingStores || !formData.companyId}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+        >
+          {stores.map(store => (
+            <option key={store._id} value={store._id}>
+              {store.name} {!store.isActive && '(Inactive)'}
+            </option>
+          ))}
+        </select>
+        {fetchingStores && (
+          <p className="mt-1 text-xs text-gray-500">
+            Loading stores...
+          </p>
+        )}
+        {!formData.companyId && (
+          <p className="mt-1 text-xs text-gray-500">
+            Please select a company first
+          </p>
+        )}
       </div>
       
       <div className="flex items-center">

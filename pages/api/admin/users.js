@@ -1,15 +1,18 @@
-
-
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
+import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 import { sendSuccess, sendError, sendBadRequest, sendNotFound, sendUnauthorized } from "@/lib/utils/responseHandler";
 import bcrypt from "bcryptjs";
 import { getUserModel, getCompanyModel  } from "@/lib/models";
 import connect from "@/lib/db";
+import { getUsageStats } from '../../../lib/usage';
 const User = getUserModel()
 const Company = getCompanyModel()
 
 async function handler(req, res) {
   try {
+    // Track API usage
+    await getUsageStats('users_api');
+    
     const { method } = req;
     
     await connect();
@@ -32,6 +35,7 @@ async function handler(req, res) {
       case "POST":
         // Create a new user
         const userData = req.body;
+        console.log(userData);
         const newUser = await createUser(userData);
         return sendSuccess(res, "User created successfully", newUser, 201);
         
@@ -75,7 +79,7 @@ async function getUsers(companyId) {
 
 // Create a new user
 async function createUser(data) {
-  const { name, email, password, role, companyId } = data;
+  const { name, email, password, role, companyId, assignedStores } = data;
   
   if (!name || !email || !password || !role || !companyId) {
     throw new Error("All fields are required");
@@ -105,7 +109,8 @@ async function createUser(data) {
     password: hashedPassword,
     role,
     companyId,
-    isActive: true
+    isActive: true,
+    assignedStores: assignedStores || []
   });
   
   await newUser.save();
@@ -181,4 +186,4 @@ async function deactivateUser(userId) {
 }
 
 // Wrap handler with tenant middleware
-export default withTenant(handler); 
+export default withTenant(withUsageTracking(handler)); 

@@ -1,6 +1,8 @@
 import { getRequestHandler } from '@/lib/utils/getRequestHandler';
 import { getDataFromToken } from '@/lib/getDataFromToken';
 import { getModel } from '@/lib/models';
+import { withTenant } from "@/lib/middleware/tenantMiddleware";
+import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 async function handler(req, res) {
     if (req.method !== 'GET') {
@@ -52,4 +54,5 @@ async function handler(req, res) {
     }
 }
 
-export default getRequestHandler(handler, { maxRetries: 2 }); 
+// Wrap handler with both middlewares
+export default withTenant(withUsageTracking(handler)); 

@@ -14,6 +14,8 @@ import {
   decodeQuantityFromStorage,
 } from "@/lib/inventory/inventoryUtils";
 import mongoose from "mongoose";
+import { withTenant } from "@/lib/middleware/tenantMiddleware";
+import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 async function handler(req, res) {
   try {
@@ -401,10 +403,10 @@ async function getSalesTransactions(req, res, Transaction, companyId, userRole) 
 }
 
 // Allow admin, company_admin, and regular users to perform sales
-export default protectRoute([
+export default withTenant(withUsageTracking(protectRoute([
   "admin",
   "company_admin",
   "storeMan",
   "barMan",
   "finance",
-])(handler);
+])(handler)));

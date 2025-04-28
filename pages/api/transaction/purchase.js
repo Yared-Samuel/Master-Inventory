@@ -2,6 +2,8 @@ import connect from "@/lib/db";
 import { getInventoryModel, getProductModel } from "@/lib/models";
 import { protectRoute } from "@/lib/middleware/roleMiddleware";
 import { sendSuccess, sendError, sendCreated, sendBadRequest } from "@/lib/utils/responseHandler";
+import { withTenant } from "@/lib/middleware/tenantMiddleware";
+import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 
 async function handler(req, res) {
@@ -133,4 +135,4 @@ async function getPurchaseTransactions(req, res, Transaction) {
 }
 
 // Allow admin, company_admin, and regular users to perform purchases
-export default protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance', 'user'])(handler);
+export default withTenant(withUsageTracking(protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance', 'user'])(handler)));

@@ -4,6 +4,8 @@ import { getUserModel } from "@/lib/models";
 import { sendSuccess, sendError, sendBadRequest, sendNotFound, sendUnauthorized } from "@/lib/utils/responseHandler";
 import { serialize } from "cookie";
 import bcrypt from 'bcryptjs';
+import { withTenant } from "@/lib/middleware/tenantMiddleware";
+import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -41,7 +43,7 @@ const roleConfig = {
   }
 };
 
-export default async function Login(req, res) {
+async function handler(req, res) {
   try {
     const { email, password } = req.body;
 
@@ -175,5 +177,8 @@ function validateSubscription(subscription) {
   
   return true; // Default to valid if no specific checks apply
 }
+
+// Wrap handler with both middlewares
+export default withTenant(withUsageTracking(handler));
 
 

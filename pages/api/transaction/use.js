@@ -14,6 +14,9 @@ import {
     getPurchasePrice,
   } from "@/lib/inventory/inventoryUtils";
 
+import { withTenant } from "@/lib/middleware/tenantMiddleware";
+import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
+
   async function handler(req, res) {
     try {
         await connect();
@@ -211,11 +214,12 @@ import {
     })
   } 
 
-  export default protectRoute([
+  // Wrap handler with both middlewares
+  export default withTenant(withUsageTracking(protectRoute([
     "admin",
     "company_admin",
     "storeMan",
     "barMan",
     "finance",
     
-  ])(handler);
+  ])(handler)));

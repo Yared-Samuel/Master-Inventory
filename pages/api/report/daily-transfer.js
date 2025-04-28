@@ -1,7 +1,9 @@
 import connect from "@/lib/db";
 import mongoose from "mongoose";
+import { withTenant } from "@/lib/middleware/tenantMiddleware";
+import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Method not allowed" });
   }
@@ -119,3 +121,6 @@ export default async function handler(req, res) {
     });
   }
 }
+
+// Wrap handler with both middlewares
+export default withTenant(withUsageTracking(handler));

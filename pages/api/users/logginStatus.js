@@ -1,8 +1,10 @@
 import { getUserModel } from '@/lib/models';
 import { getDataFromToken } from '@/lib/getDataFromToken';
 import { sendSuccess, sendError } from '@/lib/utils/responseHandler';
+import { withTenant } from "@/lib/middleware/tenantMiddleware";
+import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
-export default async function logginStatus(req, res) {
+async function handler(req, res) {
   try {
     const User = getUserModel();
     const userData = await getDataFromToken(req);
@@ -33,3 +35,6 @@ export default async function logginStatus(req, res) {
     return sendError(res, error.message || "Error checking login status");
   }
 }
+
+// Wrap handler with both middlewares
+export default withTenant(withUsageTracking(handler));

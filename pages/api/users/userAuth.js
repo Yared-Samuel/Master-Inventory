@@ -1,4 +1,7 @@
 import cookie from 'cookie';
+import { withTenant } from "@/lib/middleware/tenantMiddleware";
+import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
+
 export const loginStatus = async (req, res) => {
     const cookies = cookie.parse(req.headers.cookie || '');
     const token = cookies.token; // Access the 'token' cookie
@@ -12,3 +15,6 @@ export const loginStatus = async (req, res) => {
         return res.status(200).json({ success: true, message: "User is logged in!" });
     }
 }
+
+// Wrap handler with both middlewares
+export default withTenant(withUsageTracking(loginStatus));

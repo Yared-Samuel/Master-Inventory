@@ -5,10 +5,12 @@ import { sendSuccess, sendError, sendBadRequest } from "@/lib/utils/responseHand
 import { 
   decodeQuantityFromStorage,
 } from "@/lib/inventory/inventoryUtils";
+import { withTenant } from "@/lib/middleware/tenantMiddleware";
+import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 const Transaction = getInventoryModel();
 
-export default async function handler(req, res) {
+export default withTenant(withUsageTracking(async function handler(req, res) {
   try {
     const { method, cookies } = req;
     const token = cookies?.token;
@@ -29,7 +31,7 @@ export default async function handler(req, res) {
   } catch (error) {
     return sendError(res, error);
   }
-}
+}));
 
 async function getStoresRemaining(req, res) {
   try {
