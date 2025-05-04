@@ -3,7 +3,6 @@ import { protectRoute } from "@/lib/middleware/roleMiddleware";
 import { getInventoryModel } from "@/lib/models";
 import mongoose from "mongoose";
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
-import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 async function handler(req, res) {
   if (!req.user) {
@@ -150,4 +149,4 @@ async function getPurchaseReport(req, res, companyId, userRole) {
 }
 
 // Wrap handler with both middlewares
-export default withTenant(withUsageTracking(protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance', 'user'])(handler)));
+export default withTenant(protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance', 'user'])(handler));
