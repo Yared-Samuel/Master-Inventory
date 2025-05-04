@@ -1,17 +1,14 @@
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
-import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 import { sendSuccess, sendError, sendBadRequest, sendNotFound, sendUnauthorized } from "@/lib/utils/responseHandler";
 import bcrypt from "bcryptjs";
 import { getUserModel, getCompanyModel  } from "@/lib/models";
 import connect from "@/lib/db";
-import { getUsageStats } from '../../../lib/usage';
 const User = getUserModel()
 const Company = getCompanyModel()
 
 async function handler(req, res) {
   try {
     // Track API usage
-    await getUsageStats('users_api');
     
     const { method } = req;
     
@@ -28,8 +25,12 @@ async function handler(req, res) {
     switch (method) {
       case "GET":
         // Get all users, optionally filtered by company
-        const { companyId } = req.query;
-        const users = await getUsers(companyId);
+        const companyFilter = req.user.role === 'admin' ? {} : { companyId: req.user.companyId };
+        const users = await User.find(companyFilter)
+          .select("-password")
+          .populate("companyId", "name")
+          .sort({ createdAt: -1 });
+    
         return sendSuccess(res, "Users retrieved successfully", users);
         
       case "POST":
@@ -61,21 +62,7 @@ async function handler(req, res) {
   }
 }
 
-// Get users, optionally filtered by company
-async function getUsers(companyId) {
-  let query = {};
-  
-  if (companyId) {
-    query.companyId = companyId;
-  }
-  
-  const users = await User.find(query)
-    .select("-password")
-    .populate("companyId", "name")
-    .sort({ createdAt: -1 });
-    
-  return users;
-}
+
 
 // Create a new user
 async function createUser(data) {
@@ -110,7 +97,7 @@ async function createUser(data) {
     role,
     companyId,
     isActive: true,
-    assignedStores: assignedStores || []
+    store: assignedStores || ''
   });
   
   await newUser.save();
@@ -186,4 +173,4 @@ async function deactivateUser(userId) {
 }
 
 // Wrap handler with tenant middleware
-export default withTenant(withUsageTracking(handler)); 
+export default withTenant(handler); 

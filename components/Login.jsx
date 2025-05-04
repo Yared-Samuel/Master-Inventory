@@ -8,7 +8,7 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const Login = () => {
   const router = useRouter();
 
-  const { setAuth, auth } = useContext(AuthContext);
+  const { setAuth } = useContext(AuthContext);
   
 
   const [email, setEmail] = useState("");
@@ -47,6 +47,8 @@ const Login = () => {
           name: userData.name,
           email: userData.email,
           role: userData.role,
+          store: userData.store,
+          storeName: userData.storeName,
           companyId: userData.companyId,
           permissions: userData.permissions || {},
           companyName: userData.companyName
@@ -59,8 +61,16 @@ const Login = () => {
         setTimeout(() => {
           if (userData.role === 'admin') {
             router.push("/page/dashboard");
-          } else {
-            router.push("/configs/products");
+          } else if(userData.role === 'company_admin'){
+            router.push("/page/dashboard");
+          } else if(userData.role === 'storeMan'){
+            router.push("/transaction/purchase");
+          } else if(userData.role === 'barMan'){
+            router.push("/transaction/sales");
+          } else if(userData.role === 'finance'){
+            router.push("/transaction/use");
+          } else if(userData.role === 'user'){
+            router.push("/");
           }
         }, 100);
       } else {

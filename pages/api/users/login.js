@@ -53,21 +53,19 @@ export default async function Login(req, res) {
     // Important: Connect to database before using models
     await connect();
 
-    console.log("connected")
     // Get models from registry
     const User = getUserModel();
     // const Company = getCompanyModel();
-    console.log(User)
     // Find user and populate company details
     const user = await User.findOne({ email })
       .select('+password')
-      .populate('companyId', 'name isActive subscription');
-    
+      .populate('companyId', 'name isActive subscription')
+      .populate('store', 'name isActive');
+    console.log(user)
     if (!user) {
       console.log(`User not found: ${email}`);
       return sendNotFound(res, "User not found");
     }
-    console.log(user)
     
     // Check if user is active
     if (!user.isActive) {
@@ -107,7 +105,6 @@ export default async function Login(req, res) {
     }
 
     if (!isValidPassword) {
-      console.log(`Invalid password for ${email}`);
       return sendBadRequest(res, "Invalid credentials");
     }
 
@@ -117,7 +114,6 @@ export default async function Login(req, res) {
       dashboardRedirect: "/dashboard"
     };
 
-    console.log(`${roleInfo.loginMessage} for ${email}`);
 
     // Generate token with user ID and company ID
     const token = generateToken(
@@ -130,7 +126,6 @@ export default async function Login(req, res) {
     await User.findByIdAndUpdate(user._id, {
       lastLogin: new Date()
     });
-
     // Set the authentication cookie
     res.setHeader("Set-Cookie", serialize("token", token, COOKIE_OPTIONS));
     
@@ -141,6 +136,8 @@ export default async function Login(req, res) {
       role: user.role,
       companyId: user.companyId._id,
       companyName: user.companyId.name,
+      store: (["storeMan", "barMan"].includes(user.role) && user.store && user.store._id) ? user.store._id : "",
+      storeName: (["storeMan", "barMan"].includes(user.role) && user.store && user.store.name) ? user.store.name : "",
       dashboard: roleInfo.dashboardRedirect,
       permissions: {
         isAdmin: user.role === 'admin',

@@ -51,6 +51,15 @@ const TableUse = () => {
     fetchData();
   }, []);
 
+  // Filter data for storeMan/barMan roles
+  useEffect(() => {
+    let filtered = data;
+    if ((auth.role === "storeMan" || auth.role === "barMan") && auth.store) {
+      filtered = filtered.filter(item => item.fromStore?._id === auth.store);
+    }
+    setFilteredData(filtered);
+  }, [data, auth.role, auth.store]);
+
   // Function to format currency values
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', {
@@ -107,7 +116,7 @@ const TableUse = () => {
   ];
 
   const table = useReactTable({
-    data: data,
+    data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),

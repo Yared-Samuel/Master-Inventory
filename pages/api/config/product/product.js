@@ -3,7 +3,6 @@ import { getProductModel } from "@/lib/models";
 import { protectRoute } from "@/lib/middleware/roleMiddleware";
 import { sendSuccess, sendError, sendCreated, sendBadRequest, sendNotFound } from "@/lib/utils/responseHandler";
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
-import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 const validateProductData = (data) => {
   const { name, type, measurment_name, sub_measurment_name, sub_measurment_value } = data;
@@ -91,4 +90,4 @@ async function handler(req, res) {
 }
 
 // Wrap handler with both middlewares
-export default withTenant(withUsageTracking(protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance'])(handler)));
+export default withTenant(protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance'])(handler));

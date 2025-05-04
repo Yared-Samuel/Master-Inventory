@@ -12,7 +12,7 @@ const UserForm = ({ onSuccess, initialData = {}, isAdmin = false }) => {
     role: initialData.role || 'user',
     companyId: initialData.companyId?._id || initialData.companyId || '',
     isActive: initialData.isActive !== undefined ? initialData.isActive : true,
-    assignedStores: initialData.assignedStores || []
+    assignedStores: initialData.assignedStores || ""
   });
   
   const [loading, setLoading] = useState(false);
@@ -143,7 +143,7 @@ const UserForm = ({ onSuccess, initialData = {}, isAdmin = false }) => {
         role: formData.role,
         companyId: formData.companyId,
         isActive: formData.isActive,
-        assignedStores: formData.assignedStores
+        assignedStores: formData.assignedStores || ""
       };
       
       // Include password only if set
@@ -193,7 +193,7 @@ const UserForm = ({ onSuccess, initialData = {}, isAdmin = false }) => {
           role: 'user',
           companyId: formData.companyId, // Keep the selected company for convenience
           isActive: true,
-          assignedStores: []
+          assignedStores: ""
         });
       }
       
@@ -325,7 +325,7 @@ const UserForm = ({ onSuccess, initialData = {}, isAdmin = false }) => {
           Assigned Stores
         </label>
         <select
-          multiple
+          
           name="assignedStores"
           value={formData.assignedStores}
           onChange={handleStoreSelect}

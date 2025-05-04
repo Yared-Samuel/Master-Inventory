@@ -7,8 +7,6 @@ import { useRouter } from "next/router";
 const initialState = {
   name: "",
   type: "",
-  Sprice: "",
-  operator: "",
   description: "",
   mainStore: false,
   subStore: false,
@@ -18,28 +16,7 @@ const StoreForm = () => {
   const router = useRouter();
   const [store, setStore] = useState(initialState);
   const [loading, setLoading] = useState(false);
-  const { name, Sprice, operator, description, mainStore, subStore } = store;
-  const [priceData, setPriceData] = useState([]);
-
-  useEffect(() => {
-    const getPrice = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch("/api/config/price/price");
-        if (!res.ok) {
-          return toast.error("Something went wrong!");
-        }
-        const data = await res.json();
-        setPriceData(data.data);
-      } catch (error) {
-        return toast.error("Data not found");
-      } finally {
-        setLoading(false);
-      }
-    };
-    getPrice();
-  }, [])
-  
+  const { name,  description, mainStore, subStore } = store;
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -51,7 +28,6 @@ const StoreForm = () => {
           ...store,
           mainStore: checked,
           subStore: false, // Uncheck subStore
-          Sprice: checked ? "" : store.Sprice, // Clear Sprice if mainStore is checked
         });
       } else if (name === "subStore") {
         setStore({
@@ -68,11 +44,11 @@ const StoreForm = () => {
 
   const saveStore = async (e) => {
     e.preventDefault();
-    console.log({name, Sprice, operator, description, mainStore, subStore})
+    console.log({name,  description, mainStore, subStore})
 
-    if (!name || (!Sprice && !mainStore)) {
-      toast.error("Name and Selling Price are required unless Main Store is checked");
-      return; // Stop execution if validation fails
+    if (!name) {
+      toast.error("Name is required");
+      return;
     }
 
     try {
@@ -84,8 +60,6 @@ const StoreForm = () => {
         },
         body: JSON.stringify({
           name,
-          Sprice: mainStore ? null : Sprice, // Send empty Sprice if mainStore is checked
-          operator,
           description,
           mainStore,
           subStore,
@@ -177,51 +151,7 @@ const StoreForm = () => {
                 required
               />
             </div>
-      
-            <div>
-                  <label
-                    htmlFor="name"
-                    className="block  text-[0.7rem] font-semibold text-gray-900 dark:text-white"
-                  >
-                    Selling Price{" "}
-                    {/* <span className="text-white bg-slate-600 p-1 border rounded-lg">
-                  አይነት
-                </span> */}
-                  </label>
-                  <select
-                    name="Sprice"
-                    value={store?.Sprice}
-                    onChange={handleInputChange}
-                    type="text"
-                    id="measurmant_name"
-                    disabled={store.mainStore} // Disable if mainStore is checked
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-5/6 p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    required={!store.mainStore} // Make it required only if mainStore is not checked
-                  >
-                    <option value="">Select Price</option>
-                    {priceData.map((item) => (
-                      <option key={item._id} value={item._id}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-            <div>
-              <label
-                htmlFor="operator"
-                className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
-              >
-                Operator
-              </label>
-              <input
-                name="operator"
-                value={store?.operator}
-                onChange={handleInputChange}
-                type="text"
-                id="sub_measurment_name"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-5/6 p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              />
-            </div>
+
             <div>
               <label
                 htmlFor="description"

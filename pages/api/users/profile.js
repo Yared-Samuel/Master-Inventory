@@ -1,7 +1,6 @@
 import connect from "@/lib/db";
 import { getUserModel } from "@/lib/models";
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
-import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 import { sendSuccess, sendError, sendBadRequest } from "@/lib/utils/responseHandler";
 import bcrypt from "bcryptjs";
 
@@ -96,5 +95,5 @@ async function handler(req, res) {
   }
 }
 
-// Wrap handler with both middlewares
-export default withTenant(withUsageTracking(handler)); 
+// Wrap handler with tenant middleware
+export default withTenant(handler); 

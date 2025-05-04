@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import LoadingComponent from "../ui/LoadingComponent";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
+import AuthContext from "@/pages/context/AuthProvider";
 
 const UseForm = () => {
     const router = useRouter()
+    const { auth } = useContext(AuthContext);
     const [useEntries, setUseEntries] = useState([{
         productId: "",
         quantity: "",
@@ -73,6 +75,12 @@ const UseForm = () => {
         });
         setConversionPreviews(newConversionPreviews);
       }, [useEntries, selectedProducts]);
+
+      useEffect(() => {
+        if ((auth.role === "storeMan" || auth.role === "barMan") && auth.store) {
+          setUseEntries(prevEntries => prevEntries.map(entry => ({ ...entry, fromStore: auth.store })));
+        }
+      }, [auth.role, auth.store]);
 
       const updateConversionPreview = (qty, type, prod) => {
         if (!prod || !qty || isNaN(qty) || qty <= 0) {
@@ -222,24 +230,26 @@ const UseForm = () => {
           <div>
             {useEntries.map((entry, index) => (
               <div key={index} className="grid md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4 p-4 border rounded-lg">
-                <div>
-                  <label className="block text-[0.7rem] font-semibold text-gray-900">
-                    Store <span className="text-red-600">*</span>
-                  </label>
-                  <select
-                    value={entry.fromStore}
-                    onChange={(e) => handleInputChange(index, e)}
-                    name="fromStore"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
-                  >
-                    <option value="">Select Store</option>
-                    {store.map((item) => (
-                      <option key={item._id} value={item._id}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {!(auth.role === "storeMan" || auth.role === "barMan") && (
+                  <div>
+                    <label className="block text-[0.7rem] font-semibold text-gray-900">
+                      Store <span className="text-red-600">*</span>
+                    </label>
+                    <select
+                      value={entry.fromStore}
+                      onChange={(e) => handleInputChange(index, e)}
+                      name="fromStore"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
+                    >
+                      <option value="">Select Store</option>
+                      {store.map((item) => (
+                        <option key={item._id} value={item._id}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-[0.7rem] font-semibold text-gray-900">

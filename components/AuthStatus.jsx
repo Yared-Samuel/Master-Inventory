@@ -11,7 +11,7 @@ const AuthStatus = () => {
         bottom: '10px',
         right: '10px',
         padding: '10px',
-        background: '#f3f3f3',
+        // background: '#f3f3f3',
         border: '1px solid #ccc',
         borderRadius: '5px',
         zIndex: 1000,
@@ -31,6 +31,12 @@ const AuthStatus = () => {
         </div>
         <div>
           <strong>Company:</strong> {auth.companyName || 'Not set'}
+        </div>
+        <div>
+          <strong>Store:</strong> {auth.role == 'storeMan' || auth.role == 'barMan' ? auth.store : 'Not set'}
+        </div>
+        <div>
+          <strong>Store Name:</strong> {auth.role == 'storeMan' || auth.role == 'barMan' ? auth.storeName : 'Not set'}
         </div>
       </div>
     );

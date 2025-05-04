@@ -1,5 +1,10 @@
 import jwt from 'jsonwebtoken';
 
+// Generates a JWT token containing user info for authentication
+// @param userId - The ID of the user
+// @param companyId - The ID of the company the user belongs to
+// @param role - The user's role (e.g. 'admin', 'company_admin', etc)
+// @param operator - Optional ID of store being operated, defaults to null if user isn't a store operator
 export function generateToken(userId, companyId, role) {
     return jwt.sign(
         {

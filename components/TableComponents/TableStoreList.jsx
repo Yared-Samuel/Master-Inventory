@@ -23,8 +23,6 @@ const TableStoreList = () => {
   const [rowSelection, setRowSelection] = useState({});
   const [store, setStore] = useState({
     name: "",
-    Sprice: "",
-    operator: "",
     description: "",
     mainStore: false,
     subStore: false,
@@ -32,8 +30,6 @@ const TableStoreList = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
-  const [priceData, setPriceData] = useState([]);
-
 
   const router = useRouter();
   const columnHelper = createColumnHelper();
@@ -69,10 +65,7 @@ const TableStoreList = () => {
       header: "Name",
       accessorKey: "name",
     },
-    {
-        header: "Selling Price",
-        accessorFn: (row)=> row.Sprice?.name || " - ",
-    },
+    
     {
         header: "Store Type",
         accessorFn: (row) => {
@@ -85,10 +78,7 @@ const TableStoreList = () => {
       header: "Description",
       accessorKey: "description",
     },
-    {
-      header: "Operator",
-      accessorKey: "operator",
-    },    
+       
     ...(auth.role === "admin" || auth.role === "company_admin"
         ? [
             {
@@ -149,8 +139,6 @@ const TableStoreList = () => {
         setFilteredData(targetData);
         setStore({
           name: targetData.name,
-          Sprice: targetData.Sprice?._id || targetData.Sprice || "",
-          operator: targetData.operator || "",
           description: targetData.description || "",
           mainStore: Boolean(targetData.mainStore),
           subStore: Boolean(targetData.subStore)
@@ -159,27 +147,6 @@ const TableStoreList = () => {
       }
     }
   }, [updateId, data]);
-
-
-  // Get price
-  useEffect(() => {
-    const getPrice = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch("/api/config/price/price");
-        if (!res.ok) {
-          return toast.error("Something went wrong!");
-        }
-        const data = await res.json();
-        setPriceData(data.data);
-      } catch (error) {
-        return toast.error("Data not found");
-      } finally {
-        setLoading(false);
-      }
-    };
-    getPrice();
-  }, [])
 
   // Update 
 
@@ -193,7 +160,6 @@ const TableStoreList = () => {
           ...store,
           mainStore: checked,
           subStore: false,
-          Sprice: checked ? "" : store.Sprice,
         });
       } else if (name === "subStore") {
         setStore({
@@ -211,7 +177,7 @@ const TableStoreList = () => {
   const updateStore = async (e) => {
     e.preventDefault();
 
-    const { name, Sprice, operator, description, mainStore, subStore } = store;
+    const { name, description, mainStore, subStore } = store;
     
     if (!name) {
       toast.error("Store name is required");
@@ -220,11 +186,6 @@ const TableStoreList = () => {
     
     if (!mainStore && !subStore) {
       toast.error("Please select a store type (Main Store or Sub Store)");
-      return;
-    }
-    
-    if (subStore && !Sprice) {
-      toast.error("Selling price is required for sub store");
       return;
     }
 
@@ -236,8 +197,6 @@ const TableStoreList = () => {
         },
         body: JSON.stringify({ 
           name,
-          Sprice: mainStore ? null : Sprice,
-          operator,
           description,
           mainStore,
           subStore,
@@ -383,64 +342,24 @@ const TableStoreList = () => {
                     />
                   </div>
                   
-                  <div>
-                  <label
-                          htmlFor="Sprice"
-                          className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
-                  >
-                          Selling Price
-                  </label>
-                  <select
-                    name="Sprice"
-                    value={store?.Sprice}
-                    onChange={handleInputChange}
-                          id="Sprice"
-                          disabled={store.mainStore}
-                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                          required={!store.mainStore}
-                  >
-                    <option value={null}>Select Price</option>
-                    {priceData.map((item) => (
-                      <option key={item._id} value={item._id}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-              <label
-                htmlFor="operator"
-                className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
-              >
-                Operator
-              </label>
-              <input
-                name="operator"
-                value={store?.operator}
-                onChange={handleInputChange}
-                type="text"
-                          id="operator"
-                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              />
-            </div>
+  
                       
-            <div>
-              <label
-                htmlFor="description"
-                className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
-              >
-                Description
-              </label>
-              <input
-                name="description"
-                value={store?.description}
-                onChange={handleInputChange}
-                type="text"
+                <div>
+                  <label
+                    htmlFor="description"
+                    className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
+                  >
+                    Description
+                  </label>
+                  <input
+                    name="description"
+                    value={store?.description}
+                    onChange={handleInputChange}
+                    type="text"
                           id="description"
                           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              />
-            </div>
+                  />
+                </div>
                     </div>
                   ) : (
                     <div className="flex items-center mb-4 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">

@@ -2,31 +2,6 @@ import { getStoreListModel } from "@/lib/models";
 import connect from "@/lib/db";
 import { protectRoute } from "@/lib/middleware/roleMiddleware";
 import { sendSuccess, sendError, sendBadRequest, sendNotFound } from "@/lib/utils/responseHandler";
-import { ObjectId } from "mongodb";
-
-const validateStoreData = (data) => {
-  const { name, Sprice, mainStore, subStore } = data;
-  
-  if (!name) {
-    throw { statusCode: 400, message: "Name field is required!" };
-  }
-  
-  if (mainStore && Sprice) {
-    throw { statusCode: 400, message: "Both main store and selling price not allowed!" };
-  }
-  
-  if (subStore && !Sprice) {
-    throw { statusCode: 400, message: "Selling price is required for sub store!" };
-  }
-  
-  if (mainStore && subStore) {
-    throw { statusCode: 400, message: "Only one store type can be selected" };
-  }
-  
-  if (!mainStore && !subStore) {
-    throw { statusCode: 400, message: "Please select a store type (Main Store or Sub Store)" };
-  }
-};
 
 async function handler(req, res) {
   try {

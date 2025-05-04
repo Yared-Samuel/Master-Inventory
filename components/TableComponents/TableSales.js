@@ -51,6 +51,15 @@ const TableSales = () => {
     fetchData();
   }, []);
 
+  // Filter data for storeMan/barMan roles
+  useEffect(() => {
+    let filtered = data;
+    if ((auth.role === "storeMan" || auth.role === "barMan") && auth.store) {
+      filtered = filtered.filter(item => item.fromStore?._id === auth.store);
+    }
+    setFilteredData(filtered);
+  }, [data, auth.role, auth.store]);
+
   // Function to format currency values
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', {
@@ -84,7 +93,10 @@ const TableSales = () => {
       cell: ({ row }) => {
         const transaction = row.original;
         const product = transaction.productId;
-        return formatQuantityWithUnits(transaction.quantity, product);
+        const formattedQuantity = formatQuantityWithUnits(transaction.quantity, product);
+        return (
+          <span className="bg-green-100 text-green-800 text-base me-2 px-2.5 py-0.5 rounded-sm dark:bg-green-900 dark:text-green-300">{formattedQuantity}</span>
+        )
       }
     },
     {
@@ -106,7 +118,7 @@ const TableSales = () => {
   ];
 
   const table = useReactTable({
-    data: data,
+    data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),

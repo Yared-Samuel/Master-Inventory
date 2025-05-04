@@ -44,12 +44,11 @@ async function handler(req, res) {
         // Get stores for the current company only or all stores for admin
 
         const companyFilter = req.user.role === 'admin' ? {} : { companyId: req.user.companyId };
-        console.log(companyFilter)
         
         const stores = await StoreList.find(companyFilter)
           .sort("-createdAt")
           .populate("user", "name")
-          .populate("Sprice", "name")
+          
           .lean();
         
         return sendSuccess(res, "Stores retrieved successfully", stores);
@@ -57,7 +56,7 @@ async function handler(req, res) {
 
       case "PUT": {
         const { id } = query;
-        const { name, operator, description, mainStore, subStore, isActive } = body;
+        const { name,  description, mainStore, subStore, isActive } = body;
 
         if (!id || !name) {
           return sendBadRequest(res, "Missing required fields");
@@ -75,7 +74,6 @@ async function handler(req, res) {
 
         // Prepare update data
         const updateData = { name };
-        if (operator !== undefined) updateData.operator = operator;
         if (description !== undefined) updateData.description = description;
         if (mainStore !== undefined) updateData.mainStore = mainStore === 'true' || mainStore === true;
         if (subStore !== undefined) updateData.subStore = subStore === 'true' || subStore === true;

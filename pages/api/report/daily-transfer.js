@@ -1,7 +1,6 @@
 import connect from "@/lib/db";
 import mongoose from "mongoose";
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
-import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 async function handler(req, res) {
   if (req.method !== "GET") {
@@ -122,5 +121,5 @@ async function handler(req, res) {
   }
 }
 
-// Wrap handler with both middlewares
-export default withTenant(withUsageTracking(handler));
+// Wrap handler with tenant middleware
+export default withTenant(handler);

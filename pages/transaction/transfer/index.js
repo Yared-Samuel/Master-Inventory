@@ -1,18 +1,24 @@
 import { GetCurrentPathName } from '@/actions';
+import React, { useContext } from 'react'
+import AuthContext from "@/pages/context/AuthProvider";
+
 import TransferForm from '@/components/formComponents/TransferForm';
 import Layout from '@/components/Layout';
 import TableTransfer from '@/components/TableComponents/TableTransfer';
 import TitleComponent from '@/components/TitleComponent'
 import ToggleComponent from '@/components/ToggleComponent';
 import useRedirectLoggedOutUser from '@/lib/redirect';
-import React from 'react'
+
 
 const Transfer = () => {
   useRedirectLoggedOutUser()
     const pathName = GetCurrentPathName();
+    const auth = useContext(AuthContext);
+
   return (
     <div className='px-4'>
         <TitleComponent pathName={pathName}>Transfer</TitleComponent>
+        {auth.role === "company_admin" && (
         <ToggleComponent 
           showText="Transfer" 
           hideText="Close" 
@@ -23,6 +29,7 @@ const Transfer = () => {
         >
         <TransferForm />
         </ToggleComponent>
+        )}
         <TableTransfer />
     </div>
   )

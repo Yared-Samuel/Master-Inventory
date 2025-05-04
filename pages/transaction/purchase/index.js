@@ -9,11 +9,11 @@ import React from 'react'
 
 const Purchase = () => {
     useRedirectLoggedOutUser()
-    const pathName = GetCurrentPathName();
     
   return (
     <div className='px-4'>
-        <TitleComponent pathName={pathName}>Purchase</TitleComponent>
+        <TitleComponent >Purchase</TitleComponent>
+
         <ToggleComponent 
           showText="Purchase" 
           hideText="Close" 
@@ -22,9 +22,10 @@ const Purchase = () => {
           buttonClassName="from-[#447DB5] to-[#155CA2] hover:from-[#316296] hover:to-[#0D3761]"
           contentClassName="rounded-lg shadow-md"
         >
-
         <PurchaseForm />
         </ToggleComponent>
+
+        
         <TablePurchase />
 
     </div>

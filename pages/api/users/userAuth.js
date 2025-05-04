@@ -1,6 +1,5 @@
 import cookie from 'cookie';
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
-import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 export const loginStatus = async (req, res) => {
     const cookies = cookie.parse(req.headers.cookie || '');
@@ -17,4 +16,4 @@ export const loginStatus = async (req, res) => {
 }
 
 // Wrap handler with both middlewares
-export default withTenant(withUsageTracking(loginStatus));
+export default withTenant(loginStatus);

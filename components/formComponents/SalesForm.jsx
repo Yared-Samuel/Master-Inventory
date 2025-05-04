@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import LoadingComponent from "../ui/LoadingComponent";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
+import AuthContext from "@/pages/context/AuthProvider";
 const initialState = {
   productId: "",
   quantity: "",
@@ -12,6 +13,7 @@ const initialState = {
 
 const SalesForm = () => {
   const router = useRouter();
+  const { auth } = useContext(AuthContext);
 
   const [sales, setSales] = useState(initialState);
   const [loading, setLoading] = useState(false);
@@ -412,6 +414,13 @@ const SalesForm = () => {
       </button>
     );
   };
+
+  // Set fromStore automatically for storeMan/barMan
+  useEffect(() => {
+    if ((auth.role === "storeMan" || auth.role === "barMan") && auth.store) {
+      setSales(prev => ({ ...prev, fromStore: auth.store }));
+    }
+  }, [auth.role, auth.store]);
   
   return (
     <div className="bg-slate-100 px-4 py-3 rounded-md shadow-md">
@@ -421,28 +430,31 @@ const SalesForm = () => {
         ) : (
           <>
             <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-4">
-              <div>
-                <label
-                  htmlFor="fromStore"
-                  className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
-                >
-                  Store <span className="text-red-600">*</span>
-                </label>
-                <select
-                  id="fromStore"
-                  value={sales?.fromStore}
-                  onChange={handleInputChange}
-                  name="fromStore"
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                >
-                  <option value="">Select Store</option>
-                  {store.map((item) => (
-                    <option key={item._id} value={item._id}>
-                      {item.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Store input: only show if not storeMan or barMan */}
+              {!(auth.role === "storeMan" || auth.role === "barMan") && (
+                <div>
+                  <label
+                    htmlFor="fromStore"
+                    className="block text-[0.7rem] font-semibold text-gray-900 dark:text-white"
+                  >
+                    Store <span className="text-red-600">*</span>
+                  </label>
+                  <select
+                    id="fromStore"
+                    value={sales?.fromStore}
+                    onChange={handleInputChange}
+                    name="fromStore"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  >
+                    <option value="">Select Store</option>
+                    {store.map((item) => (
+                      <option key={item._id} value={item._id}>
+                        {item.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label
                   htmlFor="productId"

@@ -3,7 +3,6 @@ import connect from "@/lib/db";
 import { protectRoute } from "@/lib/middleware/roleMiddleware";
 import { sendSuccess, sendError, sendBadRequest, sendCreated } from "@/lib/utils/responseHandler";
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
-import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 async function handler(req, res) {
   try {
@@ -19,7 +18,6 @@ async function handler(req, res) {
         console.log("first")
         const companies = await Company.find().sort("-createdAt");
         return sendSuccess(res, "Companies retrieved successfully", companies);
-        console.log(companies)
       case "POST":
         const { name, email, address, phone } = req.body;
         
@@ -48,4 +46,4 @@ async function handler(req, res) {
 }
 
 // Wrap handler with both middlewares
-export default withTenant(withUsageTracking(protectRoute(['admin'])(handler))); 
+export default withTenant(protectRoute(['admin'])(handler)); 

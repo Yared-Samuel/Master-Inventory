@@ -2,19 +2,16 @@ import { getUserModel } from '@/lib/models';
 import { getDataFromToken } from '@/lib/getDataFromToken';
 import { sendSuccess, sendError } from '@/lib/utils/responseHandler';
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
-import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 async function handler(req, res) {
   try {
     const User = getUserModel();
-    const userData = await getDataFromToken(req);
-    
+    const userData = await getDataFromToken(req.cookies.token);
     if (!userData) {
       return sendSuccess(res, "User not logged in", { isLoggedIn: false });
     }
     
     const user = await User.findById(userData.id).select('-password').populate('companyId');
-    
     if (!user) {
       return sendSuccess(res, "User not found", { isLoggedIn: false });
     }
@@ -27,7 +24,9 @@ async function handler(req, res) {
         email: user.email,
         role: user.role,
         companyId: user.companyId._id,
-        companyName: user.companyId.name
+        companyName: user.companyId.name,
+        store: (["storeMan", "barMan"].includes(user.role) && user.store && user.store._id) ? user.store._id : "",
+        storeName: (["storeMan", "barMan"].includes(user.role) && user.store && user.store.name) ? user.store.name : "",
       }
     });
   } catch (error) {
@@ -36,5 +35,4 @@ async function handler(req, res) {
   }
 }
 
-// Wrap handler with both middlewares
-export default withTenant(withUsageTracking(handler));
+export default withTenant(handler);

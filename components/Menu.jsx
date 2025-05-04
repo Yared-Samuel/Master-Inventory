@@ -9,7 +9,7 @@ const menuItems = [
         icon: "/menu-icon/home.svg" ,
         label: "Dashboard",
         href: "/page/dashboard",
-        visible: ["admin", "company_admin", "storeMan", "barMan", "finance", "user"],
+        visible: ["admin", "company_admin"],
       },
       
       {
@@ -53,12 +53,12 @@ const menuItems = [
             href: "/configs/stores",
             visible: ["admin", "company_admin"],
           },
-          {
-            icon: "/menu-icon/price-config.svg",
-            label: "Price",
-            href: "/configs/prices",
-            visible: ["admin", "company_admin"],
-          },
+          // {
+          //   icon: "/menu-icon/price-config.svg",
+          //   label: "Price",
+          //   href: "/configs/prices",
+          //   visible: ["admin", "company_admin"],
+          // },
         ]
       },
       {

@@ -1,3 +1,4 @@
+"use client";
 import { createContext, useState, useEffect } from "react";
 
 const AuthContext = createContext({
@@ -6,37 +7,43 @@ const AuthContext = createContext({
 });
 
 export const AuthProvider = ({ children }) => {
-    // Initialize auth state from localStorage if available
-    const [auth, setAuthState] = useState(() => {
-        // Check if we're in the browser environment
-        if (typeof window !== 'undefined') {
-            const savedAuth = localStorage.getItem('authData');
-            try {
-                const parsed = savedAuth ? JSON.parse(savedAuth) : {};
-                return parsed;
-            } catch (e) {
-                console.error("Error parsing saved auth data:", e);
-                return {};
-            }
-        }
-        return {};
-    });
+    const [auth, setAuthState] = useState({});
 
-    // Custom setAuth function that persists to localStorage
+    useEffect(() => {
+        const loadAuthData = () => {
+            try {
+                if (typeof window !== 'undefined') {
+                    const savedAuth = localStorage.getItem('authData');
+                    if (savedAuth && savedAuth !== 'undefined' && savedAuth !== 'null') {
+                        try {
+                            const parsed = JSON.parse(savedAuth);
+                            if (parsed && typeof parsed === 'object') {
+                                setAuthState(parsed);
+                            }
+                        } catch (parseError) {
+                            console.error("Error parsing auth data:", parseError);
+                            localStorage.removeItem('authData');
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error accessing localStorage:", e);
+            }
+        };
+
+        loadAuthData();
+    }, []);
+
     const setAuth = (newAuthData) => {
-        
-        // Update state
-        setAuthState(newAuthData);
-        
-        // Save to localStorage
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('authData', JSON.stringify(newAuthData));
+        try {
+            setAuthState(newAuthData);
+            if (typeof window !== 'undefined' && newAuthData) {
+                localStorage.setItem('authData', JSON.stringify(newAuthData));
+            }
+        } catch (e) {
+            console.error("Error saving auth data:", e);
         }
     };
-
-    // Debug current auth state when it changes
-    useEffect(() => {
-    }, [auth]);
 
     return (
         <AuthContext.Provider value={{ auth, setAuth }}>

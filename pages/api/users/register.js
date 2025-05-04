@@ -5,7 +5,6 @@ import { sendSuccess, sendError, sendBadRequest } from "@/lib/utils/responseHand
 import { serialize } from "cookie";
 import mongoose from "mongoose";
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
-import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 const User = getUserModel();
 const Company = getCompanyModel();
@@ -139,5 +138,4 @@ async function handler(req, res) {
   }
 }
 
-// Wrap handler with both middlewares
-export default withTenant(withUsageTracking(handler));
+export default withTenant(handler);

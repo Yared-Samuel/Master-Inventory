@@ -15,7 +15,6 @@ import {
   getSellingPrice,
 } from "@/lib/inventory/inventoryUtils";
 import { withTenant } from "@/lib/middleware/tenantMiddleware";
-import { withUsageTracking } from "@/lib/middleware/usageMiddleware";
 
 async function handler(req, res) {
   try {
@@ -264,11 +263,4 @@ function validateTransferInput(productId, quantity, fromStore, toStore) {
 }
 
 // Wrap handler with both middlewares
-export default withTenant(withUsageTracking(protectRoute([
-  "admin",
-  "company_admin",
-  "storeMan",
-  "barMan",
-  "finance",
-  "user",
-])(handler)));
+export default withTenant(protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance', 'user'])(handler));
