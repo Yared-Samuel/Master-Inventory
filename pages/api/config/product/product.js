@@ -90,4 +90,4 @@ async function handler(req, res) {
 }
 
 // Wrap handler with both middlewares
-export default withTenant(protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance'])(handler));
+export default withTenant(protectRoute(['admin', 'company_admin', 'storeMan', 'barMan'])(handler));

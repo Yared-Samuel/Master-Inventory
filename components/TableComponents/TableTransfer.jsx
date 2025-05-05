@@ -61,18 +61,20 @@ const TableTransfer = () => {
     }, [data, auth.role, auth.store]);
 
     const columns = [
-        
         {
           header: "Action",
           accessorKey: "transactionType",
+          enableSorting: true,
         },
         {
             header: "Store",
             accessorFn: (row)=> row.fromStore?.name,
+            enableSorting: true,
         },
         {
             header: "Product",
             accessorFn: (row)=> row.productId?.name,
+            enableSorting: true,
         },
         {
           header: "Quantity",
@@ -81,11 +83,13 @@ const TableTransfer = () => {
             const transaction = row.original;
             const product = transaction.productId;
             return formatQuantityWithUnits(transaction.quantity, product);
-          }
+          },
+          enableSorting: false,
         },
         {
           header: "Total Price",
           accessorKey: "totalPrice",
+          enableSorting: false,
         },    
         {
           header: "Remaining",
@@ -94,14 +98,15 @@ const TableTransfer = () => {
             const transaction = row.original;
             const product = transaction.productId;
             return formatQuantityWithUnits(transaction.remaining, product);
-          }
+          },
+          enableSorting: false,
         },    
-           
         ...(auth.role === "admin" || auth.role === "company_admin"
             ? [
                 {
                     header: "Created By",
                     accessorFn: (row) => row.user.name,
+                    enableSorting: false,
                 },
                 {
                     header: "Actions",
@@ -123,6 +128,7 @@ const TableTransfer = () => {
                         </Link>
                       </div>
                     ),
+                    enableSorting: false,
                   },
             ] : []
         )

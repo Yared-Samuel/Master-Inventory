@@ -373,15 +373,17 @@ async function getSalesTransactions(req, res, Transaction, companyId, userRole) 
         );
 
         // Format the quantity
-        formattedQuantity = `${decoded.wholeUnits} ${product.measurment_name}`;
+        formattedQuantity = `${decoded.wholeUnits}`;
+        let  subQuantity  
         if (decoded.remainderSubUnits > 0) {
-          formattedQuantity += ` ${decoded.remainderSubUnits} ${product.sub_measurment_name}`;
+          subQuantity = ` ${decoded.remainderSubUnits}`;
         }
       }
 
       return {
         ...transactionObj,
         quantity: formattedQuantity,
+        subQuantity: transaction.quantity,
       };
     });
 

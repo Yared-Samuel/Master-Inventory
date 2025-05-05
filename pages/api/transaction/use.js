@@ -214,4 +214,4 @@ import { withTenant } from "@/lib/middleware/tenantMiddleware";
   } 
 
   // Wrap handler with both middlewares
-  export default withTenant(protectRoute(['admin', 'company_admin', 'storeMan', 'barMan', 'finance', 'user'])(handler));
+  export default withTenant(protectRoute(['admin', 'company_admin', 'storeMan', 'barMan'])(handler));

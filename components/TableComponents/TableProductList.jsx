@@ -4,6 +4,7 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getFilteredRowModel,
+  getSortedRowModel,
 } from "@tanstack/react-table";
 import { useState, useContext, useEffect } from "react";
 import { productTypes } from "@/lib/constants";
@@ -85,10 +86,12 @@ const TableProductList = () => {
     {
       header: "Name",
       accessorKey: "name",
+      enableSorting: true,
     },
     {
       header: "Type",
       accessorKey: "type",
+      enableSorting: true,
     },
     {
       header: "Measurment",
@@ -96,12 +99,14 @@ const TableProductList = () => {
         row.sub_measurment_value
           ? `${row.measurment_name}=${row.sub_measurment_value} ${row.sub_measurment_name}`
           : row.measurment_name,
+      enableSorting: false,
     },
     ...(auth.role === "admin" || auth.role === "company_admin"
       ? [
           {
             header: "Created By",
             accessorFn: (row) => row.user.name,
+            enableSorting: false,
           },
           {
             header: "Actions",
@@ -154,6 +159,7 @@ const TableProductList = () => {
               </div>
             
             ),
+            enableSorting: false,
           },
         ]
       : []),
@@ -164,6 +170,7 @@ const TableProductList = () => {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     state: {
       sorting: sorting,
       globalFilter: filtering,

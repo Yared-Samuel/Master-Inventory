@@ -99,7 +99,12 @@ const Register = () => {
         .find((row) => row.startsWith('token='))
         ?.split('=')[1];
         
-        setAuth({ userRole, userName, token })
+        setAuth(prev => ({
+          ...prev,
+          userRole,
+          userName,
+          token
+        }))
         
         router.push('/page/dashboard')
 

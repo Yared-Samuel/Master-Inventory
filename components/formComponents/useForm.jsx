@@ -8,6 +8,7 @@ const UseForm = () => {
     const router = useRouter()
     const { auth } = useContext(AuthContext);
     const [useEntries, setUseEntries] = useState([{
+        productType: "",
         productId: "",
         quantity: "",
         fromStore: "",
@@ -121,6 +122,7 @@ const UseForm = () => {
 
       const addNewEntry = () => {
         setUseEntries([...useEntries, {
+            productType: "",
             productId: "",
             quantity: "",
             fromStore: "",
@@ -229,7 +231,25 @@ const UseForm = () => {
         ) : (
           <div>
             {useEntries.map((entry, index) => (
-              <div key={index} className="grid md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4 p-4 border rounded-lg">
+              <div key={index} className="grid md:grid-cols-3 lg:grid-cols-7 gap-4 mb-4 p-4 border rounded-lg">
+                <div>
+                  <label className="block text-[0.7rem] font-semibold text-gray-900">
+                    Product Type <span className="text-red-600">*</span>
+                  </label>
+                  <select
+                    onChange={(e) => handleInputChange(index, e)}
+                    value={entry.productType}
+                    name="productType"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
+                  >
+                    <option value="">Select Type</option>
+                    <option value="finished">Finished</option>
+                    <option value="raw">Raw</option>
+                    <option value="fixed">Fixed</option>
+                    <option value="use-and-throw">Use and Throw</option>
+                    <option value="others">Others</option>
+                  </select>
+                </div>
                 {!(auth.role === "storeMan" || auth.role === "barMan") && (
                   <div>
                     <label className="block text-[0.7rem] font-semibold text-gray-900">
@@ -250,7 +270,6 @@ const UseForm = () => {
                     </select>
                   </div>
                 )}
-
                 <div>
                   <label className="block text-[0.7rem] font-semibold text-gray-900">
                     Product <span className="text-red-600">*</span>
@@ -260,16 +279,18 @@ const UseForm = () => {
                     value={entry.productId}
                     name="productId"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
+                    disabled={!entry.productType}
                   >
-                    <option value="">Select Product</option>
-                    {product.map((item) => (
-                      <option key={item._id} value={item._id}>
-                        {item.name}
-                      </option>
-                    ))}
+                    <option value="">{entry.productType ? "Select Product" : "Select Product Type First"}</option>
+                    {product
+                      .filter(item => !entry.productType || item.type === entry.productType)
+                      .map((item) => (
+                        <option key={item._id} value={item._id}>
+                          {item.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
-
                 <div>
                   <label className="block text-[0.7rem] font-semibold text-gray-900">
                     Measurement Type <span className="text-red-600">*</span>
@@ -291,7 +312,6 @@ const UseForm = () => {
                     )}
                   </select>
                 </div>
-
                 <div>
                   <label className="block text-[0.7rem] font-semibold text-gray-900">
                     Quantity <span className="text-red-600">*</span>
@@ -333,7 +353,6 @@ const UseForm = () => {
                     </div>
                   )}
                 </div>
-
                 <div>
                   <label className="block text-[0.7rem] font-semibold text-gray-900">
                     Date
@@ -346,7 +365,6 @@ const UseForm = () => {
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
                   />
                 </div>
-
                 <div className="flex items-end gap-2">
                   <button
                     type="button"

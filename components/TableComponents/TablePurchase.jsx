@@ -50,10 +50,7 @@ const TablePurchase = () => {
               return toast.error(`Something went wrong! ${res.status}`);
             }
             const data = await res.json();
-            // Debug the first item
-            if (data?.data?.length > 0) {
-              console.log("Sample purchase data:", data.data[0]);
-            }
+           
             
             setData(data.data);
           } catch (error) {
@@ -99,14 +96,15 @@ const TablePurchase = () => {
 
       // Columns
       const columns = [
-        
         {
             header: "Store",
             accessorFn: (row)=> row.fromStore?.name,
+            enableSorting: true,
         },
         {
             header: "Product",
             accessorFn: (row)=> row.productId?.name,
+            enableSorting: true,
         },
         {
           header: "Quantity",
@@ -118,12 +116,14 @@ const TablePurchase = () => {
             return (
               <span className="bg-green-100 text-green-800 text-base me-2 px-2.5 py-0.5 rounded-sm dark:bg-green-900 dark:text-green-300">{formattedQuantity}</span>
             )
-          }
+          },
+          enableSorting: false,
         },
         {
           header: "Total Price",
           accessorKey: "totalPrice",
-          cell: (info) => formatCurrency(info.getValue() || 0)
+          cell: (info) => formatCurrency(info.getValue() || 0),
+          enableSorting: false,
         },
         {
           header: "Remaining",
@@ -132,26 +132,30 @@ const TablePurchase = () => {
             const transaction = row.original;
             const product = transaction.productId;
             return formatQuantityWithUnits(transaction.remaining, product);
-          }
+          },
+          enableSorting: false,
         },
         ...(auth.role === "admin" || auth.role === "company_admin"
           ? [
               {
                 header: "Tin",
                 accessorKey: "tin",
+                enableSorting: false,
               },
             ]
           : []),
         {
           header: "Date",
           accessorKey: "date",
-          cell: (info) => info.getValue() ? new Date(info.getValue()).toLocaleDateString() : 'N/A'
+          cell: (info) => info.getValue() ? new Date(info.getValue()).toLocaleDateString() : 'N/A',
+          enableSorting: false,
         },
         ...(auth.role === "admin" || auth.role === "company_admin"
             ? [
                 {
                     header: "Created By",
                     accessorFn: (row) => row.user?.name || 'N/A',
+                    enableSorting: false,
                 },
                 {
                     header: "Actions",
@@ -177,11 +181,12 @@ const TablePurchase = () => {
                         </Link>
                       </div>
                     ),
+                    enableSorting: false,
                   },
             ] : []
         )
       ];
-
+      console.log(filteredData);
       const table = useReactTable({
           data: filteredData,
           columns,

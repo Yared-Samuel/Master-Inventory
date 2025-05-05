@@ -40,9 +40,6 @@ const Login = () => {
 
       if (data.success && data.data) {
         const userData = data.data;
-        
-        
-        // First set the auth state
         setAuth({
           name: userData.name,
           email: userData.email,
@@ -53,15 +50,11 @@ const Login = () => {
           permissions: userData.permissions || {},
           companyName: userData.companyName
         });
-        
-        // Show success message
         toast.success(data.message);
-        
-        // Then navigate based on role (after auth is set)
+        // Wait a moment for the toast to show, then navigate
         setTimeout(() => {
-          if (userData.role === 'admin') {
-            router.push("/page/dashboard");
-          } else if(userData.role === 'company_admin'){
+          setIsLoading(false); // Stop loading before navigation
+          if (userData.role === 'admin' || userData.role === 'company_admin') {
             router.push("/page/dashboard");
           } else if(userData.role === 'storeMan'){
             router.push("/transaction/purchase");
@@ -72,148 +65,102 @@ const Login = () => {
           } else if(userData.role === 'user'){
             router.push("/");
           }
-        }, 100);
+        }, 1200); // 1.2s for toast to be visible
       } else {
         toast.error(data.message || "Login failed");
         setErrMsg(data?.message || "Login failed");
+        setIsLoading(false);
       }
     } catch (error) {
       toast.error(error.message || "An error occurred");
       console.error("Error during login:", error);
       setErrMsg("An error occurred while logging in");
-    } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   };
   return (
-    <div>
-    {isLoading ? (<LoadingComponent />) : (
-      <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-      <div className="mx-auto sm:mx-auto sm:w-full sm:max-w-sm">
-      <div className="flex justify-center items-center gap-2   border-b-2 border-t-2 border-gray-300 ">
-            <div className=" w-12 h-12 flex items-center justify-center">
-              <Image src="/logo.svg" alt="Logo" width={200} height={200} />
-            </div>
-            <span className="text-2xl font-extrabold text-primary-700">MALEDA  </span>
-            <span className="text-sm font-normal text-secondary-400">Inventory Management</span>
-          </div>
-      </div>
-            <h2 className="text-2xl font-bold text-center text-secondary-700 mt-4">Login</h2>
-      <div className="mt-3 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form onSubmit={handleLogin} className="space-y-6 " >
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm/6 font-medium text-gray-900 dark:text-gray-200"
-            >
-              Email
-              <span className={validEmail ? "inline-block" : "hidden"}>
-                <Image
-                  src="/icons/checked-circle.svg"
-                  alt="info"
-                  width={20}
-                  height={20}
-                />
-              </span>
-              <span
-                className={validEmail || !email ? "hidden" : "inline-block"}
-              >
-                <Image
-                  src="/icons/danger-red.svg"
-                  alt="info"
-                  width={20}
-                  height={20}
-                />
-              </span>
-            </label>
-            <div className="mt-2">
-              <input
-                type="email"
-                id="email"
-                // ref={emailRef}
-                aria-invalid={validEmail ? "false" : "true"}
-                onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => setEmailFocus(true)}
-                onBlur={() => setEmailFocus(false)}
-                required
-                autoComplete="off"
-                className="block w-full rounded-md bg-white dark:bg-gray-500 px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-              />
-              <p
-                id="uemnote"
-                className={
-                  emailFocus && email && !validEmail
-                    ? "text-[12px] text-orange-700 flex gap-2 outline-[1px] outline-red-500 outline-offset-1 rounded-md mx-2 mt-2 bg-slate-100"
-                    : "hidden"
-                }
-              >
-                <Image
-                  src="/icons/info-circle.svg"
-                  alt="info"
-                  width={30}
-                  height={30}
-                />
-                Not valid Email!
-              </p>
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="password"
-                className="block text-sm/6 font-medium text-gray-900 dark:text-gray-200"
-              >
-                Password
-              </label>
-              <div
-                className="text-sm"
-                onClick={() => alert("Contact your administrator.")}
-              >
-                <a
-                  href="#"
-                  className="font-semibold text-indigo-600 dark:text-indigo-300 hover:text-indigo-500"
-                >
-                  Forgot password?
-                </a>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-100 to-indigo-200 relative overflow-hidden px-2 sm:px-0">
+      {/* Decorative blurred SVG or blob background */}
+      <div className="absolute -top-32 -left-32 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-blue-300 opacity-20 rounded-full blur-[80px] sm:blur-[120px] z-0"></div>
+      <div className="absolute bottom-0 right-0 w-[200px] h-[200px] sm:w-[400px] sm:h-[400px] bg-indigo-400 opacity-20 rounded-full blur-[60px] sm:blur-[100px] z-0"></div>
+      {isLoading ? (
+        <LoadingComponent />
+      ) : (
+        <div className="relative z-10 w-full max-w-xs sm:max-w-md mx-auto">
+          <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200 px-4 py-8 sm:px-8 sm:py-10 flex flex-col items-center animate-fadeInUp">
+            <div className="flex flex-col items-center gap-2 mb-6">
+              <div className="flex items-center justify-center mb-2">
+                <Image src="/logo.svg" alt="Logo" width={60} height={60} />
               </div>
             </div>
-            <div className="mt-2">
-              <input
-                id="password"
-                name="password"
-                type="password"
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="off"
-                className="block w-full rounded-md bg-white dark:bg-gray-500 px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-              />
-            </div>
+            <form onSubmit={handleLogin} className="space-y-6 w-full">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Email
+                  <span className={validEmail ? "inline-block ml-1" : "hidden"}>
+                    <Image src="/icons/checked-circle.svg" alt="info" width={18} height={18} />
+                  </span>
+                  <span className={validEmail || !email ? "hidden" : "inline-block ml-1"}>
+                    <Image src="/icons/danger-red.svg" alt="info" width={18} height={18} />
+                  </span>
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  aria-invalid={validEmail ? "false" : "true"}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setEmailFocus(true)}
+                  onBlur={() => setEmailFocus(false)}
+                  required
+                  autoComplete="off"
+                  className="block w-full rounded-lg bg-white/90 dark:bg-gray-500 px-3 py-2 text-base text-gray-900 outline-none border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 shadow-sm placeholder:text-gray-400 transition-all duration-200"
+                />
+                <p
+                  id="uemnote"
+                  className={
+                    emailFocus && email && !validEmail
+                      ? "text-xs text-orange-700 flex gap-2 border border-red-300 rounded-md px-2 py-1 mt-2 bg-slate-50 animate-fadeIn"
+                      : "hidden"
+                  }
+                >
+                  <Image src="/icons/info-circle.svg" alt="info" width={20} height={20} />
+                  Not valid Email!
+                </p>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Password
+                  </label>
+                  <div
+                    className="text-xs cursor-pointer text-indigo-500 hover:underline"
+                    onClick={() => alert("Contact your administrator.")}
+                  >
+                    Forgot password?
+                  </div>
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="off"
+                  className="block w-full rounded-lg bg-white/90 dark:bg-gray-500 px-3 py-2 text-base text-gray-900 outline-none border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 shadow-sm placeholder:text-gray-400 transition-all duration-200"
+                />
+              </div>
+              <div className="flex justify-center mt-6">
+                <button
+                  type="submit"
+                  className="w-1/2 sm:w-1/3 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold text-lg shadow-md hover:from-indigo-600 hover:to-blue-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                >
+                  Login
+                </button>
+              </div>
+            </form>
           </div>
-
-          <div className="flex justify-center">
-            <button
-              type="submit"
-              className="bg-indigo-500 p-2 px-4 rounded-md text-white w-1/4 font-semibold"
-            >
-              Login
-            </button>
-          </div>
-        </form>
-
-        <p className="mt-10 text-center text-sm/6 text-gray-500">
-          Not a member?{" "}
-          <a
-            href="#"
-            className="font-semibold text-indigo-600 dark:text-indigo-300 hover:text-indigo-500"
-          >
-            Contact your administrator.
-          </a>
-        </p>
-      </div>
-    </div>
-    )}
-      
+        </div>
+      )}
     </div>
   );
 };

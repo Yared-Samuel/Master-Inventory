@@ -50,7 +50,7 @@ const TableSales = () => {
     };
     fetchData();
   }, []);
-
+  console.log(data);
   // Filter data for storeMan/barMan roles
   useEffect(() => {
     let filtered = data;
@@ -76,16 +76,23 @@ const TableSales = () => {
         year: 'numeric',
         month: 'short',
         day: 'numeric'
-      })
+      }),
+      enableSorting: true,
+      sortingFn: (rowA, rowB, columnId) => {
+        const a = rowA.getValue(columnId);
+        const b = rowB.getValue(columnId);
+        return new Date(a) - new Date(b);
+      },
     },
-
     {
       header: "Store",
       accessorFn: (row) => row.fromStore?.name,
+      enableSorting: true,
     },
     {
       header: "Product",
       accessorFn: (row) => row.productId?.name,
+      enableSorting: true,
     },
     {
       header: "Quantity",
@@ -97,25 +104,28 @@ const TableSales = () => {
         return (
           <span className="bg-green-100 text-green-800 text-base me-2 px-2.5 py-0.5 rounded-sm dark:bg-green-900 dark:text-green-300">{formattedQuantity}</span>
         )
-      }
+      },
+      enableSorting: false,
     },
     {
       header: "Price",
       accessorKey: "totalPrice",
-      cell: (info) => formatCurrency(info.getValue())
+      cell: (info) => formatCurrency(info.getValue()),
+      enableSorting: false,
     },    
-    // {
-    //   header: "Remaining",
-    //   accessorKey: "remaining",
-    //   cell: ({ row }) => {
-    //     const transaction = row.original;
-    //     const product = transaction.productId;
-    //     return formatQuantityWithUnits(transaction.remaining, product);
-    //   }
-    // },    
-       
-
+    {
+      header: "Remaining",
+      accessorKey: "remaining",
+      cell: ({ row }) => {
+        const transaction = row.original;
+        const product = transaction.productId;
+        return formatQuantityWithUnits(transaction.remaining, product);
+      },
+      enableSorting: false,
+    },    
   ];
+
+  console.log(filteredData);
 
   const table = useReactTable({
     data: filteredData,

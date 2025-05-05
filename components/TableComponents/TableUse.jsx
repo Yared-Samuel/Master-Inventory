@@ -67,7 +67,6 @@ const TableUse = () => {
       currency: 'USD',
     }).format(value);
   };
-  console.log(data)
 
   const columns = [
     {
@@ -77,16 +76,23 @@ const TableUse = () => {
         year: 'numeric',
         month: 'short',
         day: 'numeric'
-      })
+      }),
+      enableSorting: true,
+      sortingFn: (rowA, rowB, columnId) => {
+        const a = rowA.getValue(columnId);
+        const b = rowB.getValue(columnId);
+        return new Date(a) - new Date(b);
+      },
     },
-
     {
       header: "Store",
       accessorFn: (row) => row.fromStore?.name,
+      enableSorting: true,
     },
     {
       header: "Product",
       accessorFn: (row) => row.productId?.name,
+      enableSorting: true,
     },
     {
       header: "Quantity",
@@ -95,24 +101,25 @@ const TableUse = () => {
         const transaction = row.original;
         const product = transaction.productId;
         return formatQuantityWithUnits(transaction.quantity, product);
-      }
+      },
+      enableSorting: false,
     },
     {
       header: "Price",
       accessorKey: "totalPrice",
-      cell: (info) => formatCurrency(info.getValue())
+      cell: (info) => formatCurrency(info.getValue()),
+      enableSorting: false,
     },    
-    // {
-    //   header: "Remaining",
-    //   accessorKey: "remaining",
-    //   cell: ({ row }) => {
-    //     const transaction = row.original;
-    //     const product = transaction.productId;
-    //     return formatQuantityWithUnits(transaction.remaining, product);
-    //   }
-    // },    
-       
-
+    {
+      header: "Remaining",
+      accessorKey: "remaining",
+      cell: ({ row }) => {
+        const transaction = row.original;
+        const product = transaction.productId;
+        return formatQuantityWithUnits(transaction.remaining, product);
+      },
+      enableSorting: false,
+    },    
   ];
 
   const table = useReactTable({

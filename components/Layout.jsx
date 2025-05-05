@@ -32,31 +32,25 @@ const Layout = ({children}) => {
         h-full
         bg-white
         transition-all duration-300 ease-in-out
-        ${isSidebarOpen ? 'left-0' : '-left-full lg:left-0'}
-        ${isSidebarOpen ? 'w-40 md:w-36' : 'w-16'}
-        p-2
+        ${isSidebarOpen ? 'left-0 w-64' : '-left-full lg:left-0 w-20'}
+        p-0
         border-r border-gray-200
+        flex flex-col
       `}>
-        <div className="flex items-center justify-between mb-6">
-          <div
-            
-            className="flex border-b-2 border-t-2 border-red-300"
-          >
-            <Image src={"/logo.svg"} alt="logo" width={27} height={27} className='rounded-full' />
-            <span className={`text-l font-bold text-[#1066A8] transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
-            <span className={`${isSidebarOpen ? '' : 'hidden'}`}>MALEDA</span>
-            </span>
+        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
+          <div className="flex items-center gap-3">
+            <Image src={"/logo.svg"} alt="logo" width={36} height={36} className='rounded-full' />
+            <span className={`text-xl font-bold text-[#1066A8] transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>MALEDA</span>
           </div>
-          
           {/* Toggle Button for large screens */}
           <button 
             onClick={() => setSidebarOpen(!isSidebarOpen)}
-            className="hidden lg:block"
+            className="hidden lg:block p-2 rounded hover:bg-blue-100 transition-colors"
+            aria-label="Toggle sidebar"
           >
             {isSidebarOpen ? <CloseIcon fontSize="small" /> : <MenuIcon fontSize="small" />}
           </button>
         </div>
-        
         <Menu isExpanded={isSidebarOpen} />
       </aside>
 

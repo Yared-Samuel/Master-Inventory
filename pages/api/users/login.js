@@ -1,6 +1,6 @@
 import { generateToken } from "@/actions/jwt";
 import connect from "@/lib/db";
-import { getUserModel } from "@/lib/models";
+import { getUserModel, getStoreListModel } from "@/lib/models";
 import { sendSuccess, sendError, sendBadRequest, sendNotFound, sendUnauthorized } from "@/lib/utils/responseHandler";
 import { serialize } from "cookie";
 import bcrypt from 'bcryptjs';
@@ -49,11 +49,10 @@ export default async function Login(req, res) {
       return sendBadRequest(res, "Email and password are required");
     }
 
-
-    // Important: Connect to database before using models
     await connect();
 
-    // Get models from registry
+    getStoreListModel();
+
     const User = getUserModel();
     // const Company = getCompanyModel();
     // Find user and populate company details
