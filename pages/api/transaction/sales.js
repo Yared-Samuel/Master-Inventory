@@ -57,9 +57,9 @@ async function handleSalesTransaction(body, userId, companyId, userRole, res, Tr
       fromStore,
       used_products,
       date,
+      manualTransaction,
     } = body;
 
-    console.log(used_products)
     
     // Validate input
     if (!isValidObjectId(productId) || !isValidObjectId(fromStore)) {
@@ -281,6 +281,7 @@ async function handleSalesTransaction(body, userId, companyId, userRole, res, Tr
       date: date || new Date(),
       user: userId,
       companyId: transactionCompanyId, // Use appropriate company ID
+      manualTransaction: manualTransaction,
     });
       
     await transaction.save({ session });

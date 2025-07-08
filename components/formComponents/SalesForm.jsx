@@ -9,6 +9,7 @@ const initialState = {
   fromStore: "",
   date: "",
   measurementType: "main", // 'main' or 'sub'
+  manualTransaction: true,
 };
 
 const SalesForm = () => {
@@ -347,6 +348,7 @@ const SalesForm = () => {
     
     return true;
   };
+  console.log(sales);
 
   const saveSales = async (e) => {
     e.preventDefault();
@@ -371,7 +373,8 @@ const SalesForm = () => {
           measurementType,
           fromStore, 
           used_products: editableComponents || [],
-          date: date || new Date().toISOString().split('T')[0]
+          date: date || new Date().toISOString().split('T')[0],
+          manualTransaction: sales.manualTransaction,
         }),
       });
       
@@ -579,6 +582,21 @@ const SalesForm = () => {
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="Select date"
                 />
+              </div>
+              <div className="flex items-center h-5 mt-1">
+              <input
+              id="manualTransaction"
+               name="manualTransaction"
+               type="checkbox"
+               checked={!sales.manualTransaction}
+               onChange={e => setSales({ ...sales, manualTransaction: !e.target.checked })}
+               className="border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 checked:border-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+
+              />
+              <label htmlFor="manualTransaction" className="ms-3">
+      <span className="block text-sm font-semibold text-gray-800 dark:text-neutral-300">Recipt</span>
+      <span id="manualTransaction" className="block text-sm text-gray-600 dark:text-neutral-500">Transaction with recipt</span>
+    </label>
               </div>
               
               <div className="flex items-end">
