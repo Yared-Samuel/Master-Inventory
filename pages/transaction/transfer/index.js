@@ -18,7 +18,7 @@ const Transfer = () => {
   return (
     <div className='px-4'>
         <TitleComponent pathName={pathName}>Transfer</TitleComponent>
-        {auth.role === "company_admin" && (
+        {/* {auth.role === "company_admin" && ( */}
         <ToggleComponent 
           showText="Transfer" 
           hideText="Close" 
@@ -29,7 +29,7 @@ const Transfer = () => {
         >
         <TransferForm />
         </ToggleComponent>
-        )}
+        {/* )} */}
         <TableTransfer />
     </div>
   )
