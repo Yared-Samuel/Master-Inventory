@@ -36,32 +36,42 @@ const TablePurchase = () => {
     const [columnVisibility, setColumnVisibility] = useState({});
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
-
+    const [params, setParams] = useState({
+      startDate: new Date(),
+      endDate: new Date(),
+    });
     const router = useRouter();
     const columnHelper = createColumnHelper();
 
+    const handleParamsChange = (e) => {
+      setParams((prev) => ({
+        ...prev,
+        [e.target.name]: e.target.value,
+      }));
+    }
+    const handleView = async ()=> {
+      setLoading(true);
+      try {       
+
+        const queryParams = new URLSearchParams(params).toString();
+        const res = await fetch(`/api/transaction/filtered-view/purchase?${queryParams}`);
+        if (!res.ok) {
+          return toast.error(`Something went wrong! ${res.status}`);
+        }
+        const data = await res.json();
+        setData(data.data);
+      } catch (error) {
+        toast.error("not found");
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
     useEffect(() => {
-        const fetchData = async () => {
-          setLoading(true);
-          setError(null);
-          try {
-            const res = await fetch("/api/transaction/purchase");
-            if (!res.ok) {
-              return toast.error(`Something went wrong! ${res.status}`);
-            }
-            const data = await res.json();
-           
-            
-            setData(data.data);
-          } catch (error) {
-            toast.error("not found");
-            setError(error.message);
-          } finally {
-            setLoading(false);
-          }
-        };
-        fetchData();
-      }, []);
+    handleView();
+  }, []);
+
+    
 
       useEffect(() => {
         let filtered = data;
@@ -186,7 +196,6 @@ const TablePurchase = () => {
             ] : []
         )
       ];
-      console.log(filteredData);
       const table = useReactTable({
           data: filteredData,
           columns,
@@ -254,6 +263,7 @@ const TablePurchase = () => {
                 toast.error('Failed to export data');
             }
         };
+        console.log(params)
 
         return (
             <>
@@ -276,31 +286,39 @@ const TablePurchase = () => {
                       </div>
                     )}
                     <div className="flex items-center gap-2">
-                      <DatePicker
-                        selected={startDate}
-                        onChange={(date) => setStartDate(date)}
-                        selectsStart
-                        startDate={startDate}
-                        endDate={endDate}
+                      <input
+                        type="date"
+                        name="startDate"
+                        onChange={handleParamsChange}
+                        value={params.startDate}
                         placeholderText="Start Date"
                         className="px-2 py-1 text-sm border rounded"
-                        dateFormat="yyyy-MM-dd"
                       />
-                      <DatePicker
-                        selected={endDate}
-                        onChange={(date) => setEndDate(date)}
-                        selectsEnd
-                        startDate={startDate}
-                        endDate={endDate}
-                        minDate={startDate}
+                      <input
+                        type="date"
+                        name="endDate"
+                        
+                        onChange={handleParamsChange}
+                        value={params.endDate}
                         placeholderText="End Date"
                         className="px-2 py-1 text-sm border rounded"
-                        dateFormat="yyyy-MM-dd"
                       />
                     </div>
                   </div>
                   {/* Export to CSV button: only show for company_admin */}
                   {auth.role === "admin" || auth.role === "company_admin" && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleView}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm flex items-center gap-2"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+</svg>
+View 
+
+                      </button>
                     <button
                       onClick={exportToCSV}
                       className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm flex items-center gap-2"
@@ -310,6 +328,7 @@ const TablePurchase = () => {
                       </svg>
                       Export to CSV
                     </button>
+                    </div>
                   )}
                 </div>
                 <TanStackTable

@@ -28,6 +28,7 @@ const TableSales = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState(null);
+  const [params, setParams] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
