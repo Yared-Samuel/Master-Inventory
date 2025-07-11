@@ -61,7 +61,7 @@ const TableSales = () => {
 
   useEffect(() => {
     handleView();
-  }, [params]);
+  }, []);
 
   // Filter data for storeMan/barMan roles
   useEffect(() => {
