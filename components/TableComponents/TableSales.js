@@ -8,7 +8,6 @@ import {
   getSortedRowModel,
 } from "@tanstack/react-table";
 import { useState, useContext, useEffect } from "react";
-
 import TanStackTable from "../tanStackTableComponents/TanStackTable";
 import AuthContext from "@/pages/context/AuthProvider";
 import { toast } from "react-toastify";
@@ -28,14 +27,24 @@ const TableSales = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState(null);
-  const [params, setParams] = useState({});
+  const [params, setParams] = useState({
+    startDate: new Date(),
+    endDate: new Date()
+  });
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const handleParamsChange = (e) => {
+    setParams((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  }
+
+    const handleView = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("/api/transaction/sales");
+          const queryParams = new URLSearchParams(params).toString();
+        const res = await fetch(`/api/transaction/filtered-view/sales?${queryParams}`);
         if (!res.ok) {
           return toast.error(`Something went wrong! ${res.status}`);
         }
@@ -49,9 +58,11 @@ const TableSales = () => {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
-  console.log(data);
+
+  useEffect(() => {
+    handleView();
+  }, [params]);
+
   // Filter data for storeMan/barMan roles
   useEffect(() => {
     let filtered = data;
@@ -126,7 +137,6 @@ const TableSales = () => {
     },    
   ];
 
-  console.log(filteredData);
 
   const table = useReactTable({
     data: filteredData,
@@ -146,10 +156,43 @@ const TableSales = () => {
     getRowId: (row) => row._id, // Ensure unique IDs for rows
     enableRowSelection: true, // Enables row selection
   });
-
+  
   return (
     <>
       <div className="bg-slate-100 mt-4 py-1 rounded-md shadow-md">
+        <div className="flex items-center justify-between gap-2">
+
+      <div className="flex items-center gap-2">
+                      <input
+                        type="date"
+                        name="startDate"
+                        onChange={handleParamsChange}
+                        value={params.startDate}
+                        placeholderText="Start Date"
+                        className="px-2 py-1 text-sm border rounded"
+                      />
+                      <input
+                        type="date"
+                        name="endDate"
+                        
+                        onChange={handleParamsChange}
+                        value={params.endDate}
+                        placeholderText="End Date"
+                        className="px-2 py-1 text-sm border rounded"
+                      />
+                    </div>
+                    <button
+                        onClick={handleView}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm flex items-center gap-2"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+</svg>
+View 
+
+                      </button>
+        </div>
         <TanStackTable
           table={table}
           filtering={filtering}

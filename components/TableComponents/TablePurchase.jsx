@@ -67,6 +67,8 @@ const TablePurchase = () => {
         setLoading(false);
       }
     }
+
+    
     useEffect(() => {
     handleView();
   }, []);
@@ -263,7 +265,7 @@ const TablePurchase = () => {
                 toast.error('Failed to export data');
             }
         };
-        console.log(params)
+        
 
         return (
             <>
@@ -306,7 +308,7 @@ const TablePurchase = () => {
                     </div>
                   </div>
                   {/* Export to CSV button: only show for company_admin */}
-                  {auth.role === "admin" || auth.role === "company_admin" && (
+                  {/* {auth.role === "admin" || auth.role === "company_admin" && ( */}
                     <div className="flex items-center gap-2">
                       <button
                         onClick={handleView}
@@ -329,7 +331,7 @@ View
                       Export to CSV
                     </button>
                     </div>
-                  )}
+                  {/* )} */}
                 </div>
                 <TanStackTable
                     table={table}
